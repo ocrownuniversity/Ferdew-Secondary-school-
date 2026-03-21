@@ -999,7 +999,28 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
             </div>
             <div class="form-group">
               <label>Date of Birth *</label>
-              <input type="date" id="adm_dob" required>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:8px;">
+                <select id="adm_dob_day" required style="padding:12px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-family:var(--font-body);font-size:0.9rem;color:var(--gray-800);outline:none;">
+                  <option value="">Day</option>
+                  <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+                  <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+                  <option>11</option><option>12</option><option>13</option><option>14</option><option>15</option>
+                  <option>16</option><option>17</option><option>18</option><option>19</option><option>20</option>
+                  <option>21</option><option>22</option><option>23</option><option>24</option><option>25</option>
+                  <option>26</option><option>27</option><option>28</option><option>29</option><option>30</option>
+                  <option>31</option>
+                </select>
+                <select id="adm_dob_month" required style="padding:12px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-family:var(--font-body);font-size:0.9rem;color:var(--gray-800);outline:none;">
+                  <option value="">Month</option>
+                  <option value="01">January</option><option value="02">February</option>
+                  <option value="03">March</option><option value="04">April</option>
+                  <option value="05">May</option><option value="06">June</option>
+                  <option value="07">July</option><option value="08">August</option>
+                  <option value="09">September</option><option value="10">October</option>
+                  <option value="11">November</option><option value="12">December</option>
+                </select>
+                <input type="number" id="adm_dob_year" required placeholder="Year e.g. 2013" min="2000" max="2020" style="padding:12px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-family:var(--font-body);font-size:0.9rem;color:var(--gray-800);outline:none;">
+              </div>
             </div>
             <div class="form-group">
               <label>Gender *</label>
@@ -1667,10 +1688,11 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         <select onchange="switchDashMobile(this.value)" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);padding:6px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;display:none;" id="dashMobileSelect">
           <option value="overview">📊 Overview</option>
           <option value="applications">📋 Applications</option>
-          <option value="payments">💳 Payments</option>
           <option value="boarding">🏠 Boarding</option>
+          <option value="fees">💳 Fee Payments</option>
           <option value="news">📰 News</option>
           <option value="gallery">🖼️ Gallery</option>
+          <option value="feepayments">💳 Fee Payments</option>
           <option value="students">🎓 Students</option>
         </select>
         <button onclick="adminLogout()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);font-size:0.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;">🚪 Logout</button>
@@ -1688,8 +1710,10 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         <div class="dash-nav-item" onclick="switchDash('applications')"><span class="icon">📋</span> Applications</div>
         <div class="dash-nav-item" onclick="switchDash('payments')"><span class="icon">💳</span> Payments</div>
         <div class="dash-nav-item" onclick="switchDash('boarding')"><span class="icon">🏠</span> Boarding</div>
+        <div class="dash-nav-item" onclick="switchDash('fees')"><span class="icon">💳</span> Fee Payments</div>
         <div class="dash-nav-item" onclick="switchDash('news')"><span class="icon">📰</span> News Posts</div>
         <div class="dash-nav-item" onclick="switchDash('gallery')"><span class="icon">🖼️</span> Gallery</div>
+        <div class="dash-nav-item" onclick="switchDash('feepayments')"><span class="icon">💳</span> Fee Payments</div>
         <div class="dash-nav-item" onclick="switchDash('students')"><span class="icon">🎓</span> Students</div>
       </div>
       <div style="margin-top:auto;">
@@ -1806,6 +1830,36 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
 
+      <!-- FEE PAYMENTS -->
+      <div class="dash-section" id="dash-fees">
+        <div class="dash-header"><h2>💳 Fee Payments — Pending Confirmation</h2></div>
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:0.875rem;color:#856404;">
+          ⚠️ Only <strong>Bank Transfer</strong> payments appear here for confirmation. Paystack payments are auto-confirmed. After you verify a bank transfer in your Opay app, click <strong>Confirm</strong> to update the student's balance.
+        </div>
+        <div class="dash-table-wrap">
+          <h3 style="margin-bottom:1rem;">Pending Bank Transfer Payments</h3>
+          <table class="dash-table">
+            <thead>
+              <tr><th>Student</th><th>Class</th><th>Amount</th><th>Type</th><th>Term</th><th>Txn ID</th><th>Date</th><th>Action</th></tr>
+            </thead>
+            <tbody id="feePaymentsTable">
+              <tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:2rem;">Loading fee payments...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dash-table-wrap" style="margin-top:1.5rem;">
+          <h3 style="margin-bottom:1rem;">All Confirmed Payments</h3>
+          <table class="dash-table">
+            <thead>
+              <tr><th>Student</th><th>Class</th><th>Amount</th><th>Method</th><th>Term</th><th>Txn ID</th><th>Date</th></tr>
+            </thead>
+            <tbody id="feeConfirmedTable">
+              <tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:2rem;">No confirmed payments yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- NEWS -->
       <div class="dash-section" id="dash-news">
         <div class="dash-header"><h2>Manage News Posts</h2></div>
@@ -1813,7 +1867,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <h3 class="form-title">Add News Post</h3>
           <div class="form-grid">
             <div class="form-group"><label>Title</label><input type="text" id="news_title" placeholder="Post title"></div>
-            <div class="form-group"><label>Date</label><input type="date" id="news_date"></div>
+            <div class="form-group"><label>Date</label><input type="text" id="news_date" placeholder="e.g. 21 March 2025"></div>
             <div class="form-group full"><label>Content</label><textarea id="news_content" placeholder="News content..."></textarea></div>
           </div>
           <button class="btn btn-primary btn-sm" style="margin-top:1rem" onclick="addNewsPost()">Publish Post</button>
@@ -1836,6 +1890,32 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <div class="form-success" id="galSuccess">✅ Gallery entry added!</div>
         </div>
         <div id="galleryList" style="display:flex;flex-wrap:wrap;gap:12px;"></div>
+      </div>
+
+      <!-- FEE PAYMENTS -->
+      <div class="dash-section" id="dash-feepayments">
+        <div class="dash-header">
+          <h2>Fee Payments</h2>
+          <button class="btn btn-primary btn-sm" onclick="loadFeePayments()">🔄 Refresh</button>
+        </div>
+        <div class="dash-table-wrap">
+          <p style="font-size:0.85rem;color:var(--gray-600);margin-bottom:1rem;">Review and confirm or reject student fee payments. Confirmed payments update the student's balance immediately.</p>
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Amount</th>
+                <th>Type</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="feePaymentsTable">
+              <tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">Click "Refresh" to load fee payments.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- STUDENTS -->
@@ -2027,117 +2107,127 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
 
           <!-- BALANCE TRACKER -->
           <div style="background:var(--navy-dark);border-radius:var(--radius-lg);padding:1.75rem;margin-bottom:1.5rem;color:var(--white);">
-            <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">2025/2026 · First Term · Fee Balance</div>
+            <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">2025/2026 · Fee Balance Summary</div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:1.5rem;">
               <div style="text-align:center;">
-                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:var(--gold-light);" id="feeTotal">₦0</div>
-                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:4px;">Total Fees</div>
+                <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:900;color:var(--gold-light);" id="feeTotal">₦0</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:4px;">Total Fees</div>
               </div>
               <div style="text-align:center;">
-                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:#4ade80;" id="feePaid">₦0</div>
-                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:4px;">Amount Paid</div>
+                <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:900;color:#4ade80;" id="feePaid">₦0</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:4px;">Confirmed Paid</div>
               </div>
               <div style="text-align:center;">
-                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:#f87171;" id="feeBalance">₦0</div>
-                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:4px;">Balance</div>
+                <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:900;color:#f87171;" id="feeBalance">₦0</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:4px;">Balance</div>
               </div>
             </div>
-            <!-- Progress Bar -->
             <div style="background:rgba(255,255,255,0.1);border-radius:100px;height:10px;overflow:hidden;">
               <div id="feeProgressBar" style="height:100%;background:linear-gradient(90deg,var(--gold),#4ade80);border-radius:100px;width:0%;transition:width 0.8s ease;"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;margin-top:6px;">
-              <span style="font-size:0.75rem;color:rgba(255,255,255,0.4);" id="feeInstallmentInfo">0 of 3 installments used</span>
-              <span style="font-size:0.75rem;color:rgba(255,255,255,0.4);" id="feePercent">0% paid</span>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:4px;">
+              <span style="font-size:0.72rem;color:rgba(255,255,255,0.4);" id="feeInstallmentInfo">0 of 3 installments used</span>
+              <span style="font-size:0.72rem;color:rgba(255,255,255,0.4);" id="feePercent">0% confirmed</span>
+            </div>
+            <!-- Pending amount banner -->
+            <div id="feePendingBanner" style="display:none;margin-top:1rem;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:0.75rem 1rem;font-size:0.8rem;color:#fbbf24;">
+              ⏳ <span id="feePendingText"></span> — awaiting admin confirmation
             </div>
           </div>
 
-          <!-- INSTALLMENT WARNING -->
+          <!-- STATUS MESSAGES -->
+          <div id="feePendingNotice" style="display:none;background:#fff8e1;border:1px solid #ffc107;border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:0.875rem;color:#856404;"></div>
           <div id="feeWarning" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:0.875rem;color:#856404;">
-            ⚠️ You have used all <strong>3 installments</strong> for this term. You may make <strong>one final payment</strong> to clear your remaining balance. Please contact the school bursar if you need assistance.
+            ⚠️ You have used all <strong>3 installments</strong>. You may make <strong>one final payment</strong> to clear your remaining balance.
           </div>
           <div id="feeClearedMsg" style="display:none;background:#d4edda;border:1px solid #c3e6cb;border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:0.875rem;color:#155724;">
-            ✅ <strong>Fees fully paid!</strong> Your school fees for this term have been completely settled. Thank you!
+            ✅ <strong>Fees fully settled!</strong> Your school fees for this term have been completely paid and confirmed.
           </div>
 
           <!-- PAYMENT FORM -->
           <div class="form-wrap" id="feePaymentForm">
-            <h3 class="form-title">Make a Payment</h3>
-            <p class="form-subtitle">Choose full payment or enter an installment amount.</p>
+            <h3 class="form-title">Submit a Payment</h3>
+            <p class="form-subtitle">Bank transfer payments require admin confirmation before your balance updates. Paystack payments are confirmed instantly.</p>
 
-            <!-- TERM SELECT -->
+            <!-- TERM -->
             <div class="form-group" style="margin-bottom:1rem;">
-              <label>Select Term</label>
-              <select id="feeTerm" onchange="updateFeeDisplay()">
-                <option value="first">First Term 2025/2026</option>
-                <option value="second">Second Term 2025/2026</option>
-                <option value="third">Third Term 2025/2026</option>
+              <label>Term</label>
+              <select id="feeTerm">
+                <option value="First Term 2025/2026">First Term 2025/2026</option>
+                <option value="Second Term 2025/2026">Second Term 2025/2026</option>
+                <option value="Third Term 2025/2026">Third Term 2025/2026</option>
               </select>
             </div>
 
-            <!-- AMOUNT TYPE -->
+            <!-- PAYMENT TYPE -->
             <div style="margin-bottom:1rem;">
-              <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:8px;">Payment Type</label>
+              <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:8px;">Payment Type *</label>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                 <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;text-align:center;" id="fullPayOption" onclick="selectFeeType('full')">
                   <div style="font-size:1.3rem;margin-bottom:4px;">💰</div>
-                  <div style="font-weight:700;font-size:0.9rem;color:var(--navy);">Full Payment</div>
-                  <div style="font-size:0.78rem;color:var(--gray-600);margin-top:2px;" id="fullPayAmt">Pay full balance</div>
+                  <div style="font-weight:700;font-size:0.875rem;color:var(--navy);">Full Payment</div>
+                  <div style="font-size:0.75rem;color:var(--gray-600);margin-top:2px;" id="fullPayAmt">Clear entire balance</div>
                 </div>
                 <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;text-align:center;" id="installPayOption" onclick="selectFeeType('installment')">
                   <div style="font-size:1.3rem;margin-bottom:4px;">📅</div>
-                  <div style="font-weight:700;font-size:0.9rem;color:var(--navy);">Installment</div>
-                  <div style="font-size:0.78rem;color:var(--gray-600);margin-top:2px;" id="installLeft">Max 3 times/term</div>
+                  <div style="font-weight:700;font-size:0.875rem;color:var(--navy);">Installment</div>
+                  <div style="font-size:0.75rem;color:var(--gray-600);margin-top:2px;" id="installLeft">Max 3 per term</div>
                 </div>
               </div>
             </div>
 
-            <!-- AMOUNT INPUT (shown for installment) -->
+            <!-- INSTALLMENT AMOUNT -->
             <div class="form-group" id="amountInputWrap" style="display:none;margin-bottom:1rem;">
-              <label>Enter Amount (₦) *</label>
+              <label>Amount to Pay (₦) *</label>
               <input type="number" id="feeAmountInput" placeholder="e.g. 150000" min="1000" oninput="validateFeeAmount()">
               <span style="font-size:0.78rem;color:var(--gray-400);" id="amountHint">Enter amount between ₦1,000 and your balance</span>
             </div>
 
             <!-- PAYMENT METHOD -->
-            <div style="margin-bottom:1.25rem;">
-              <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:8px;">Payment Method</label>
+            <div style="margin-bottom:1rem;">
+              <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:8px;">Payment Method *</label>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                 <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;" id="feeBankOption" onclick="selectFeePayMethod('bank')">
                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-400);" id="feeBankRadio"></div>
+                    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-400);display:flex;align-items:center;justify-content:center;" id="feeBankRadio"></div>
                     <span style="font-weight:700;font-size:0.85rem;color:var(--navy);">🏦 Bank Transfer</span>
                   </div>
-                  <div style="font-size:0.78rem;color:var(--gray-600);line-height:1.7;">
+                  <div style="font-size:0.775rem;color:var(--gray-600);line-height:1.7;">
                     <div>Opay · <strong>8150898386</strong></div>
                     <div>Oladeji Opeyemi Ridwan</div>
-                    <div style="margin-top:4px;color:var(--gray-400);">Send proof to WhatsApp: 08150898386</div>
                   </div>
+                  <div style="margin-top:6px;font-size:0.72rem;color:var(--gold);font-weight:600;">⏳ Requires admin confirmation</div>
                 </div>
                 <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;" id="feePaystackOption" onclick="selectFeePayMethod('paystack')">
                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-400);" id="feePaystackRadio"></div>
+                    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-400);display:flex;align-items:center;justify-content:center;" id="feePaystackRadio"></div>
                     <span style="font-weight:700;font-size:0.85rem;color:var(--navy);">💳 Paystack</span>
                   </div>
-                  <div style="font-size:0.78rem;color:var(--gray-600);line-height:1.7;">
-                    <div>✅ Card / Transfer</div>
-                    <div>✅ USSD</div>
-                    <div style="margin-top:4px;color:var(--gray-400);">Instant confirmation</div>
+                  <div style="font-size:0.775rem;color:var(--gray-600);line-height:1.7;">
+                    <div>✅ Card / Transfer / USSD</div>
                   </div>
+                  <div style="margin-top:6px;font-size:0.72rem;color:var(--success);font-weight:600;">⚡ Auto-confirmed instantly</div>
                 </div>
               </div>
             </div>
 
-            <div style="font-size:0.8rem;color:var(--danger);display:none;margin-bottom:0.75rem;" id="feeFormErr">⚠️ Please select payment type and method.</div>
-            <button class="btn btn-primary" onclick="processFeePayment()" id="feePayBtn">Proceed to Payment →</button>
-            <div class="form-success" id="feePaySuccess" style="margin-top:1rem;"></div>
+            <!-- TRANSACTION ID (bank only) -->
+            <div class="form-group" id="txnIdWrap" style="display:none;margin-bottom:1rem;">
+              <label>Transaction ID / Reference *</label>
+              <input type="text" id="feeTxnId" placeholder="e.g. TXN1234567890 or OPay ref number">
+              <span style="font-size:0.78rem;color:var(--gray-400);">Enter the transaction ID from your Opay receipt</span>
+            </div>
+
+            <div style="font-size:0.8rem;color:var(--danger);display:none;margin-bottom:0.75rem;" id="feeFormErr"></div>
+            <button class="btn btn-primary" onclick="processFeePayment()" id="feePayBtn">Submit Payment →</button>
+            <div class="form-success" id="feePaySuccess" style="margin-top:1rem;display:none;"></div>
           </div>
 
           <!-- PAYMENT HISTORY -->
           <div style="margin-top:2rem;">
             <h3 style="font-size:1.05rem;margin-bottom:1rem;">📜 Payment History</h3>
             <div id="feeHistoryList">
-              <div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:0.875rem;background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);">No payments recorded yet for this term.</div>
+              <div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:0.875rem;background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);">No payment records yet.</div>
             </div>
           </div>
         </div>
@@ -2311,7 +2401,7 @@ async function submitAdmission(e) {
   const data = {
     firstName: document.getElementById('adm_fname').value,
     lastName: document.getElementById('adm_lname').value,
-    dob: document.getElementById('adm_dob').value,
+    dob: `${document.getElementById('adm_dob_day').value} / ${document.getElementById('adm_dob_month').options[document.getElementById('adm_dob_month').selectedIndex].text} / ${document.getElementById('adm_dob_year').value}`,
     gender: document.getElementById('adm_gender').value,
     class: document.getElementById('adm_class').value,
     type: document.getElementById('adm_type').value,
@@ -2506,24 +2596,83 @@ function switchDashByName(section) {
 }
 
 async function loadAdminData() {
-  if (!firebaseReady) {
-    loadDemoData();
-    return;
-  }
+  if (!firebaseReady) { loadDemoData(); return; }
   try {
     const admSnap = await db.collection('admissions').orderBy('timestamp','desc').limit(20).get();
     const apps = admSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     document.getElementById('dc-apps').textContent = apps.length;
     renderAppsTable(apps, 'recentAppsTable');
     renderAppsTable(apps, 'allAppsTable', true);
-
     const brdSnap = await db.collection('boarding').orderBy('timestamp','desc').get();
     const boarding = brdSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderBoardingTable(boarding);
-  } catch(err) {
-    console.log('Firestore load error:', err.message);
-    loadDemoData();
-  }
+    loadFeePayments();
+  } catch(err) { console.log('Firestore load error:', err.message); loadDemoData(); }
+}
+
+async function loadFeePayments() {
+  if (!firebaseReady) return;
+  try {
+    // Pending
+    const pendSnap = await db.collection('fee_payments').where('status','==','pending').orderBy('timestamp','desc').get();
+    const pending = pendSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const pendTbody = document.getElementById('feePaymentsTable');
+    if (!pending.length) {
+      pendTbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:2rem;">No pending payments. All clear! ✅</td></tr>';
+    } else {
+      pendTbody.innerHTML = pending.map(p=>`
+        <tr>
+          <td><strong>${p.studentName||'—'}</strong></td>
+          <td>${p.studentClass||'—'}</td>
+          <td style="font-weight:700;color:var(--navy);">₦${(p.amount||0).toLocaleString()}</td>
+          <td>${p.type||'—'}</td>
+          <td style="font-size:0.8rem;">${p.term||'—'}</td>
+          <td style="font-size:0.78rem;color:var(--gray-600);">${p.txnId||'—'}</td>
+          <td style="font-size:0.78rem;">${p.date||'—'}</td>
+          <td>
+            <button onclick="confirmFeePayment('${p.id}','${p.admNo}',${p.amount},'${p.studentName}')" style="background:var(--success);color:white;border:none;padding:5px 12px;border-radius:6px;font-size:0.78rem;cursor:pointer;font-weight:600;">✓ Confirm</button>
+            <button onclick="rejectFeePayment('${p.id}')" style="background:var(--danger);color:white;border:none;padding:5px 10px;border-radius:6px;font-size:0.78rem;cursor:pointer;margin-left:4px;">✗</button>
+          </td>
+        </tr>`).join('');
+    }
+    // Confirmed
+    const confSnap = await db.collection('fee_payments').where('status','==','confirmed').orderBy('timestamp','desc').limit(30).get();
+    const confirmed = confSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const confTbody = document.getElementById('feeConfirmedTable');
+    if (!confirmed.length) {
+      confTbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:2rem;">No confirmed payments yet.</td></tr>';
+    } else {
+      confTbody.innerHTML = confirmed.map(p=>`
+        <tr>
+          <td><strong>${p.studentName||'—'}</strong></td>
+          <td>${p.studentClass||'—'}</td>
+          <td style="font-weight:700;color:var(--success);">₦${(p.amount||0).toLocaleString()}</td>
+          <td>${p.method||'—'}</td>
+          <td style="font-size:0.8rem;">${p.term||'—'}</td>
+          <td style="font-size:0.78rem;color:var(--gray-600);">${p.txnId||'—'}</td>
+          <td style="font-size:0.78rem;">${p.date||'—'}</td>
+        </tr>`).join('');
+    }
+  } catch(e){ console.log('Fee load error:',e.message); }
+}
+
+async function confirmFeePayment(docId, admNo, amount, studentName) {
+  if (!confirm(`Confirm payment of ₦${Number(amount).toLocaleString()} for ${studentName}?`)) return;
+  try {
+    await db.collection('fee_payments').doc(docId).update({ status:'confirmed', confirmedAt: new Date().toISOString() });
+    // Update student's local storage key so their dashboard reflects it
+    alert(`✅ Payment confirmed for ${studentName}! Their dashboard will update on next login.`);
+    loadFeePayments();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+async function rejectFeePayment(docId) {
+  if (!confirm('Reject this payment? The student will be notified to resubmit.')) return;
+  try {
+    await db.collection('fee_payments').doc(docId).update({ status:'rejected', rejectedAt: new Date().toISOString() });
+    alert('Payment rejected.');
+    loadFeePayments();
+  } catch(e){ alert('Error: '+e.message); }
 }
 
 function loadDemoData() {
@@ -2710,238 +2859,181 @@ function switchPortal(section) {
   event?.currentTarget?.classList.add('active');
 }
 
-// ===== FEES PAYMENT SYSTEM =====
+// ===== FEES SCHEDULE & STATE =====
 const FEES_SCHEDULE = {
-  'JSS 1': 350000, 'JSS 2': 350000, 'JSS 3': 350000,
-  'SSS 1 (Science)': 430000, 'SSS 2 (Science)': 430000, 'SSS 3 (Science)': 430000,
-  'SSS 1 (Arts)': 400000, 'SSS 2 (Arts)': 400000, 'SSS 3 (Arts)': 400000,
-  'SSS 1 (Commercial)': 400000, 'SSS 2 (Commercial)': 400000, 'SSS 3 (Commercial)': 400000,
-  'SSS 1': 400000, 'SSS 2': 400000, 'SSS 3': 400000,
+  'JSS 1':350000,'JSS 2':350000,'JSS 3':350000,
+  'SSS 1':400000,'SSS 2':400000,'SSS 3':400000,
+  'SSS 1 (Science)':430000,'SSS 2 (Science)':430000,'SSS 3 (Science)':430000,
+  'SSS 1 (Arts)':400000,'SSS 2 (Arts)':400000,'SSS 3 (Arts)':400000,
+  'SSS 1 (Commercial)':400000,'SSS 2 (Commercial)':400000,'SSS 3 (Commercial)':400000,
 };
-
-let feeState = {
-  totalFees: 0,
-  amountPaid: 0,
-  installmentsUsed: 0,
-  payments: [],
-  selectedType: '',
-  selectedMethod: '',
-  studentEmail: '',
-  studentName: '',
-  admNo: ''
-};
+let feeState = { totalFees:0, amountPaid:0, installmentsUsed:0, payments:[], selectedType:'', selectedMethod:'', studentEmail:'', studentName:'', admNo:'' };
 
 function initFees(studentClass, studentEmail, studentName, admNo) {
-  const cls = studentClass || 'JSS 1';
-  feeState.totalFees = FEES_SCHEDULE[cls] || 350000;
+  feeState.totalFees = FEES_SCHEDULE[studentClass] || 350000;
   feeState.studentEmail = studentEmail || '';
   feeState.studentName = studentName || '';
   feeState.admNo = admNo || '';
-  // Load from localStorage
-  const saved = localStorage.getItem('fees_' + admNo + '_first');
-  if (saved) {
-    const data = JSON.parse(saved);
-    feeState.amountPaid = data.amountPaid || 0;
-    feeState.installmentsUsed = data.installmentsUsed || 0;
-    feeState.payments = data.payments || [];
-  }
+  feeState.payments = [];
+  const saved = localStorage.getItem('feepay_' + admNo);
+  if (saved) { const d = JSON.parse(saved); feeState.payments = d.payments || []; }
   updateFeeDisplay();
 }
 
 function updateFeeDisplay() {
   const total = feeState.totalFees;
-  const paid = feeState.amountPaid;
-  const balance = Math.max(0, total - paid);
-  const pct = total > 0 ? Math.round((paid / total) * 100) : 0;
-  const instUsed = feeState.installmentsUsed;
+  const confirmed = feeState.payments.filter(p=>p.status==='confirmed').reduce((s,p)=>s+p.amount,0);
+  const pending = feeState.payments.filter(p=>p.status==='pending').reduce((s,p)=>s+p.amount,0);
+  const balance = Math.max(0, total - confirmed);
+  const pct = total>0 ? Math.round((confirmed/total)*100) : 0;
+  const instUsed = feeState.payments.filter(p=>p.status==='confirmed').length;
 
-  document.getElementById('feeTotal').textContent = '₦' + total.toLocaleString();
-  document.getElementById('feePaid').textContent = '₦' + paid.toLocaleString();
-  document.getElementById('feeBalance').textContent = '₦' + balance.toLocaleString();
-  document.getElementById('feeProgressBar').style.width = pct + '%';
-  document.getElementById('feePercent').textContent = pct + '% paid';
-  document.getElementById('feeInstallmentInfo').textContent = instUsed + ' of 3 installments used';
-  document.getElementById('fullPayAmt').textContent = 'Pay ₦' + balance.toLocaleString();
-  document.getElementById('installLeft').textContent = (3 - Math.min(instUsed, 3)) + ' installment(s) left';
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('feeTotal','₦'+total.toLocaleString());
+  set('feePaid','₦'+confirmed.toLocaleString());
+  set('feeBalance','₦'+balance.toLocaleString());
+  set('feePercent', pct+'% confirmed');
+  set('feeInstallmentInfo', instUsed+' of 3 confirmed payments');
+  set('fullPayAmt','Pay ₦'+balance.toLocaleString());
+  set('installLeft',(3-Math.min(instUsed,3))+' payment(s) left');
+  const pb = document.getElementById('feeProgressBar'); if(pb) pb.style.width=pct+'%';
 
-  // Show/hide warnings
-  const cleared = balance <= 0;
-  document.getElementById('feeClearedMsg').style.display = cleared ? 'block' : 'none';
-  document.getElementById('feePaymentForm').style.display = cleared ? 'none' : 'block';
-  document.getElementById('feeWarning').style.display = (!cleared && instUsed >= 3) ? 'block' : 'none';
-
+  const pn = document.getElementById('feePendingNotice');
+  if(pn) { pn.style.display=pending>0?'block':'none'; if(pending>0) pn.innerHTML=`⏳ <strong>₦${pending.toLocaleString()}</strong> awaiting admin confirmation. Balance updates once confirmed.`; }
+  const cleared = balance<=0;
+  const cm=document.getElementById('feeClearedMsg'); if(cm) cm.style.display=cleared?'block':'none';
+  const pf=document.getElementById('feePaymentForm'); if(pf) pf.style.display=cleared?'none':'block';
+  const fw=document.getElementById('feeWarning'); if(fw) fw.style.display=(!cleared&&instUsed>=3)?'block':'none';
   renderPaymentHistory();
 }
 
 function selectFeeType(type) {
-  feeState.selectedType = type;
-  const fullEl = document.getElementById('fullPayOption');
-  const instEl = document.getElementById('installPayOption');
-  const amtWrap = document.getElementById('amountInputWrap');
-  // Reset
-  fullEl.style.borderColor = 'var(--gray-200)'; fullEl.style.background = '';
-  instEl.style.borderColor = 'var(--gray-200)'; instEl.style.background = '';
-  document.getElementById('feeFormErr').style.display = 'none';
-  if (type === 'full') {
-    fullEl.style.borderColor = 'var(--gold)'; fullEl.style.background = 'var(--gold-pale)';
-    amtWrap.style.display = 'none';
-  } else {
-    instEl.style.borderColor = 'var(--gold)'; instEl.style.background = 'var(--gold-pale)';
-    amtWrap.style.display = 'block';
-    document.getElementById('feeAmountInput').focus();
-  }
+  feeState.selectedType=type;
+  ['fullPayOption','installPayOption'].forEach(id=>{ const el=document.getElementById(id); if(el){el.style.borderColor='var(--gray-200)';el.style.background='';} });
+  const el=document.getElementById(type==='full'?'fullPayOption':'installPayOption');
+  if(el){el.style.borderColor='var(--gold)';el.style.background='var(--gold-pale)';}
+  const aw=document.getElementById('amountInputWrap'); if(aw) aw.style.display=type==='installment'?'block':'none';
+  const fe=document.getElementById('feeFormErr'); if(fe) fe.style.display='none';
 }
 
 function selectFeePayMethod(method) {
-  feeState.selectedMethod = method;
-  const bankEl = document.getElementById('feeBankOption');
-  const psEl = document.getElementById('feePaystackOption');
-  bankEl.style.borderColor = 'var(--gray-200)'; bankEl.style.background = '';
-  psEl.style.borderColor = 'var(--gray-200)'; psEl.style.background = '';
-  document.getElementById('feeBankRadio').innerHTML = '';
-  document.getElementById('feePaystackRadio').innerHTML = '';
-  document.getElementById('feeFormErr').style.display = 'none';
-  if (method === 'bank') {
-    bankEl.style.borderColor = 'var(--gold)'; bankEl.style.background = 'var(--gold-pale)';
-    document.getElementById('feeBankRadio').innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin:auto;"></div>';
-  } else {
-    psEl.style.borderColor = 'var(--gold)'; psEl.style.background = 'var(--gold-pale)';
-    document.getElementById('feePaystackRadio').innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin:auto;"></div>';
-  }
+  feeState.selectedMethod=method;
+  ['feeBankOption','feePaystackOption'].forEach(id=>{ const el=document.getElementById(id); if(el){el.style.borderColor='var(--gray-200)';el.style.background='';} });
+  ['feeBankRadio','feePaystackRadio'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=''; });
+  const dot='<div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin:auto;"></div>';
+  const opt=document.getElementById(method==='bank'?'feeBankOption':'feePaystackOption');
+  const radio=document.getElementById(method==='bank'?'feeBankRadio':'feePaystackRadio');
+  if(opt){opt.style.borderColor='var(--gold)';opt.style.background='var(--gold-pale)';}
+  if(radio) radio.innerHTML=dot;
+  const fe=document.getElementById('feeFormErr'); if(fe) fe.style.display='none';
 }
 
 function validateFeeAmount() {
-  const val = parseInt(document.getElementById('feeAmountInput').value);
-  const balance = feeState.totalFees - feeState.amountPaid;
-  const hint = document.getElementById('amountHint');
-  if (val > balance) {
-    document.getElementById('feeAmountInput').value = balance;
-    hint.textContent = 'Amount cannot exceed your balance of ₦' + balance.toLocaleString();
-    hint.style.color = 'var(--danger)';
-  } else {
-    hint.textContent = 'Enter amount between ₦1,000 and ₦' + balance.toLocaleString();
-    hint.style.color = 'var(--gray-400)';
-  }
+  const confirmed=feeState.payments.filter(p=>p.status==='confirmed').reduce((s,p)=>s+p.amount,0);
+  const balance=feeState.totalFees-confirmed;
+  const inp=document.getElementById('feeAmountInput');
+  const hint=document.getElementById('amountHint');
+  if(!inp||!hint) return;
+  if(parseInt(inp.value)>balance){ inp.value=balance; hint.textContent='Cannot exceed ₦'+balance.toLocaleString(); hint.style.color='var(--danger)'; }
+  else { hint.textContent='Enter between ₦1,000 and ₦'+balance.toLocaleString(); hint.style.color='var(--gray-400)'; }
 }
 
 async function processFeePayment() {
-  const errEl = document.getElementById('feeFormErr');
-  if (!feeState.selectedType || !feeState.selectedMethod) {
-    errEl.style.display = 'block'; errEl.textContent = '⚠️ Please select payment type and method.';
-    return;
+  const errEl=document.getElementById('feeFormErr');
+  if(!feeState.selectedType||!feeState.selectedMethod){ if(errEl){errEl.style.display='block';errEl.textContent='⚠️ Please select payment type and method.';} return; }
+  const confirmed=feeState.payments.filter(p=>p.status==='confirmed').reduce((s,p)=>s+p.amount,0);
+  const instConfirmed=feeState.payments.filter(p=>p.status==='confirmed').length;
+  const balance=feeState.totalFees-confirmed;
+  const hasPending=feeState.payments.some(p=>p.status==='pending');
+  if(hasPending){ if(errEl){errEl.style.display='block';errEl.textContent='⚠️ You have a payment awaiting confirmation. Wait before submitting another.';} return; }
+  if(feeState.selectedType==='installment'&&instConfirmed>=3){ if(errEl){errEl.style.display='block';errEl.textContent='⚠️ 3 installments used. Select Full Payment to clear balance.';} return; }
+  let payAmount=0;
+  if(feeState.selectedType==='full'){ payAmount=balance; }
+  else { payAmount=parseInt(document.getElementById('feeAmountInput')?.value||0); if(!payAmount||payAmount<1000){ if(errEl){errEl.style.display='block';errEl.textContent='⚠️ Enter a valid amount (min ₦1,000).';} return; } if(payAmount>balance) payAmount=balance; }
+  if(errEl) errEl.style.display='none';
+
+  const suc=document.getElementById('feePaySuccess');
+  if(feeState.selectedMethod==='bank'){
+    submitPendingPayment(payAmount,'Bank Transfer','BANK_'+Date.now());
+    if(suc){ suc.innerHTML=`⏳ <strong>Payment Submitted — Awaiting Admin Confirmation</strong><br><br>Transfer <strong>₦${payAmount.toLocaleString()}</strong> to:<br>🏦 <strong>Opay · 8150898386 · Oladeji Opeyemi Ridwan</strong><br><br>Send receipt to WhatsApp <strong>08150898386</strong> with your admission number <strong>${feeState.admNo}</strong>. Your balance updates after admin confirms.`; suc.style.background='#fff3cd';suc.style.border='1px solid #ffc107';suc.style.color='#856404';suc.classList.add('show'); }
+    resetFeeForm(); return;
   }
-
-  const balance = feeState.totalFees - feeState.amountPaid;
-  const instUsed = feeState.installmentsUsed;
-
-  // Check installment limit
-  if (feeState.selectedType === 'installment' && instUsed >= 3) {
-    errEl.style.display = 'block';
-    errEl.textContent = '⚠️ You have used all 3 installments. Please select Full Payment to clear your balance.';
-    return;
-  }
-
-  let payAmount = 0;
-  if (feeState.selectedType === 'full') {
-    payAmount = balance;
+  if(typeof PaystackPop!=='undefined'){
+    PaystackPop.setup({ key:'pk_test_28a11f626c0b53bd1307cb18e42d21929c88b0b0', email:feeState.studentEmail||'student@ferdew.edu.ng', amount:payAmount*100, currency:'NGN', ref:'FERDEW_FEES_'+Date.now(),
+      callback:function(r){ confirmPayment(payAmount,'Paystack',r.reference); if(suc){ suc.innerHTML=`✅ <strong>Payment Confirmed!</strong> ₦${payAmount.toLocaleString()} received via Paystack. Ref: <strong>${r.reference}</strong>. Balance updated.`; suc.style.background='#d4edda';suc.style.border='1px solid #c3e6cb';suc.style.color='#155724';suc.classList.add('show'); } resetFeeForm(); },
+      onClose:function(){ alert('Payment cancelled. Nothing was recorded.'); }
+    }).openIframe();
   } else {
-    payAmount = parseInt(document.getElementById('feeAmountInput').value);
-    if (!payAmount || payAmount < 1000) {
-      errEl.style.display = 'block'; errEl.textContent = '⚠️ Please enter a valid amount (minimum ₦1,000).';
-      return;
-    }
-    if (payAmount > balance) payAmount = balance;
-  }
-
-  errEl.style.display = 'none';
-
-  // BANK TRANSFER
-  if (feeState.selectedMethod === 'bank') {
-    recordFeePayment(payAmount, 'Bank Transfer', 'MANUAL_' + Date.now());
-    document.getElementById('feePaySuccess').innerHTML = `
-      ✅ <strong>Payment recorded!</strong> Please transfer <strong>₦${payAmount.toLocaleString()}</strong> to:<br>
-      🏦 <strong>Opay · 8150898386 · Oladeji Opeyemi Ridwan</strong><br>
-      After payment, send your receipt to <strong>08150898386</strong> on WhatsApp with your admission number: <strong>${feeState.admNo}</strong>
-    `;
-    document.getElementById('feePaySuccess').classList.add('show');
-    return;
-  }
-
-  // PAYSTACK
-  if (typeof PaystackPop !== 'undefined') {
-    const handler = PaystackPop.setup({
-      key: 'pk_test_28a11f626c0b53bd1307cb18e42d21929c88b0b0',
-      email: feeState.studentEmail || 'student@ferdew.edu.ng',
-      amount: payAmount * 100,
-      currency: 'NGN',
-      ref: 'FERDEW_FEES_' + Date.now(),
-      metadata: { custom_fields: [{ display_name: 'Student', variable_name: 'student', value: feeState.studentName }, { display_name: 'Adm No', variable_name: 'adm_no', value: feeState.admNo }] },
-      callback: function(response) {
-        recordFeePayment(payAmount, 'Paystack', response.reference);
-        document.getElementById('feePaySuccess').innerHTML = `✅ <strong>Payment successful!</strong> ₦${payAmount.toLocaleString()} received. Reference: <strong>${response.reference}</strong>`;
-        document.getElementById('feePaySuccess').classList.add('show');
-      },
-      onClose: function() { alert('Payment cancelled. Your record was not updated.'); }
-    });
-    handler.openIframe();
-  } else {
-    // Demo mode
-    recordFeePayment(payAmount, feeState.selectedMethod === 'bank' ? 'Bank Transfer' : 'Paystack (Demo)', 'DEMO_' + Date.now());
-    document.getElementById('feePaySuccess').innerHTML = `✅ Payment of ₦${payAmount.toLocaleString()} recorded successfully! (Demo mode)`;
-    document.getElementById('feePaySuccess').classList.add('show');
+    submitPendingPayment(payAmount,'Paystack (Demo)','DEMO_'+Date.now());
+    if(suc){ suc.innerHTML=`⏳ <strong>Payment Submitted (Demo)</strong> — Awaiting admin confirmation.`; suc.style.background='#fff3cd';suc.style.color='#856404';suc.classList.add('show'); }
+    resetFeeForm();
   }
 }
 
-function recordFeePayment(amount, method, ref) {
-  const isInstallment = feeState.selectedType === 'installment';
-  feeState.amountPaid += amount;
-  if (isInstallment) feeState.installmentsUsed++;
-  feeState.payments.unshift({
-    amount, method, ref,
-    date: new Date().toLocaleDateString('en-NG', { day:'numeric', month:'short', year:'numeric' }),
-    time: new Date().toLocaleTimeString('en-NG', { hour:'2-digit', minute:'2-digit' }),
-    type: isInstallment ? 'Installment ' + feeState.installmentsUsed : 'Full Payment'
-  });
-  // Save to localStorage
-  localStorage.setItem('fees_' + feeState.admNo + '_first', JSON.stringify({
-    amountPaid: feeState.amountPaid,
-    installmentsUsed: feeState.installmentsUsed,
-    payments: feeState.payments
-  }));
-  // Save to Firestore
-  if (firebaseReady) {
-    try { db.collection('fee_payments').add({ ...feeState.payments[0], admNo: feeState.admNo, studentName: feeState.studentName }); } catch(e){}
-  }
+function submitPendingPayment(amount,method,ref){
+  const p={ id:ref,amount,method,ref,type:feeState.selectedType==='full'?'Full Payment':'Installment',status:'pending',date:new Date().toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}),time:new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'}),admNo:feeState.admNo,studentName:feeState.studentName };
+  feeState.payments.unshift(p);
+  localStorage.setItem('feepay_'+feeState.admNo, JSON.stringify({payments:feeState.payments}));
+  if(firebaseReady){ try{ db.collection('fee_payments').doc(ref).set(p); }catch(e){} }
   updateFeeDisplay();
-  // Reset form
-  feeState.selectedType = ''; feeState.selectedMethod = '';
-  document.getElementById('fullPayOption').style.borderColor = 'var(--gray-200)'; document.getElementById('fullPayOption').style.background = '';
-  document.getElementById('installPayOption').style.borderColor = 'var(--gray-200)'; document.getElementById('installPayOption').style.background = '';
-  document.getElementById('feeBankOption').style.borderColor = 'var(--gray-200)'; document.getElementById('feeBankOption').style.background = '';
-  document.getElementById('feePaystackOption').style.borderColor = 'var(--gray-200)'; document.getElementById('feePaystackOption').style.background = '';
-  document.getElementById('feeBankRadio').innerHTML = ''; document.getElementById('feePaystackRadio').innerHTML = '';
-  document.getElementById('amountInputWrap').style.display = 'none';
-  document.getElementById('feeAmountInput').value = '';
 }
 
-function renderPaymentHistory() {
-  const list = document.getElementById('feeHistoryList');
-  if (!feeState.payments.length) {
-    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:0.875rem;background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);">No payments recorded yet for this term.</div>';
-    return;
-  }
-  list.innerHTML = feeState.payments.map((p, i) => `
-    <div style="background:var(--white);border-radius:var(--radius);padding:1rem 1.25rem;box-shadow:var(--shadow-sm);border-left:4px solid ${i===0?'var(--gold)':'var(--navy)'};margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <div>
-        <div style="font-weight:700;font-size:0.9rem;color:var(--navy);">₦${p.amount.toLocaleString()}</div>
-        <div style="font-size:0.78rem;color:var(--gray-600);">${p.type} · ${p.method}</div>
-        <div style="font-size:0.75rem;color:var(--gray-400);">${p.date} at ${p.time}</div>
+function confirmPayment(amount,method,ref){
+  const p={ id:ref,amount,method,ref,type:feeState.selectedType==='full'?'Full Payment':'Installment',status:'confirmed',date:new Date().toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}),time:new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'}),admNo:feeState.admNo,studentName:feeState.studentName };
+  feeState.payments.unshift(p);
+  localStorage.setItem('feepay_'+feeState.admNo, JSON.stringify({payments:feeState.payments}));
+  if(firebaseReady){ try{ db.collection('fee_payments').doc(ref).set(p); }catch(e){} }
+  updateFeeDisplay();
+}
+
+function resetFeeForm(){
+  feeState.selectedType=''; feeState.selectedMethod='';
+  ['fullPayOption','installPayOption','feeBankOption','feePaystackOption'].forEach(id=>{ const el=document.getElementById(id); if(el){el.style.borderColor='var(--gray-200)';el.style.background='';} });
+  ['feeBankRadio','feePaystackRadio'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=''; });
+  const aw=document.getElementById('amountInputWrap'); if(aw) aw.style.display='none';
+  const ai=document.getElementById('feeAmountInput'); if(ai) ai.value='';
+}
+
+function renderPaymentHistory(){
+  const list=document.getElementById('feeHistoryList'); if(!list) return;
+  if(!feeState.payments.length){ list.innerHTML='<div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:0.875rem;background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);">No payment records yet.</div>'; return; }
+  list.innerHTML=feeState.payments.map(p=>{
+    const isC=p.status==='confirmed', isP=p.status==='pending', isR=p.status==='rejected';
+    const border=isC?'var(--success)':isP?'#ffc107':'var(--danger)';
+    const badge=isC?'<span style="background:#d4edda;color:#155724;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">✅ Confirmed — Payment Settled</span>':isP?'<span style="background:#fff3cd;color:#856404;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">⏳ Awaiting Admin Confirmation</span>':'<span style="background:#f8d7da;color:#721c24;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">❌ Rejected — Contact School</span>';
+    return `<div style="background:var(--white);border-radius:var(--radius);padding:1rem 1.25rem;box-shadow:var(--shadow-sm);border-left:4px solid ${border};margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+        <div><div style="font-family:var(--font-head);font-weight:900;font-size:1.1rem;color:var(--navy);">₦${p.amount.toLocaleString()}</div>
+        <div style="font-size:0.8rem;color:var(--gray-600);margin-top:2px;">${p.type} · ${p.method}</div>
+        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:2px;">${p.date} at ${p.time}</div></div>
+        <div style="text-align:right;">${badge}</div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:0.72rem;color:var(--gray-400);">Ref: ${p.ref.substring(0,20)}...</div>
-        <span style="background:#d4edda;color:#155724;font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:100px;">✓ Recorded</span>
-      </div>
-    </div>`).join('');
+      ${isP?`<div style="margin-top:0.75rem;font-size:0.78rem;color:#856404;background:#fff8e1;padding:6px 10px;border-radius:6px;">💡 Transfer ₦${p.amount.toLocaleString()} to Opay · 8150898386 and send proof to WhatsApp 08150898386</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function loadFeePayments(){
+  if(!firebaseReady){ document.getElementById('feePaymentsTable').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">Firebase not connected.</td></tr>'; return; }
+  try{
+    const snap=await db.collection('fee_payments').get();
+    const payments=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.status==='pending'?-1:1);
+    const tbody=document.getElementById('feePaymentsTable');
+    if(!payments.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">No fee payments yet.</td></tr>'; return; }
+    tbody.innerHTML=payments.map(p=>`<tr>
+      <td><strong>${p.studentName||'—'}</strong><br><span style="font-size:0.75rem;color:var(--gray-400);">${p.admNo||''}</span></td>
+      <td><strong>₦${Number(p.amount).toLocaleString()}</strong></td>
+      <td>${p.type||'—'}</td>
+      <td>${p.method||'—'}</td>
+      <td>${p.date||'—'}</td>
+      <td>${p.status==='pending'?`<button onclick="adminConfirmFee('${p.id}','confirmed')" style="background:var(--success);color:white;border:none;padding:5px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;margin-right:4px;">✅ Confirm</button><button onclick="adminConfirmFee('${p.id}','rejected')" style="background:var(--danger);color:white;border:none;padding:5px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">❌ Reject</button>`:`<span class="status-badge ${p.status==='confirmed'?'approved':'pending'}">${p.status==='confirmed'?'✅ Confirmed':'❌ Rejected'}</span>`}
+      </td></tr>`).join('');
+  }catch(e){ console.log('Fee load error:',e.message); }
+}
+
+async function adminConfirmFee(payId,newStatus){
+  if(!firebaseReady){ alert('Firebase not connected.'); return; }
+  try{ await db.collection('fee_payments').doc(payId).update({status:newStatus}); alert(newStatus==='confirmed'?'✅ Payment confirmed!':'❌ Payment rejected.'); loadFeePayments(); }catch(e){ alert('Error: '+e.message); }
 }
 
 // ===== INIT =====
