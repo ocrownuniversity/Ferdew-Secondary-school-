@@ -345,12 +345,14 @@ textarea { resize: vertical; min-height: 100px; }
 
 /* ===== STUDENT PORTAL ===== */
 .portal-wrap { min-height: 100vh; background: var(--off-white); }
-.portal-header { background: var(--navy-dark); padding: 16px 5%; display: flex; align-items: center; justify-content: space-between; }
+.portal-header { background: var(--navy-dark); padding: 12px 5%; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; }
+.portal-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.portal-user { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .portal-logo { display: flex; align-items: center; gap: 10px; }
 .portal-logo span { color: var(--white); font-weight: 700; font-family: var(--font-head); }
 .portal-user { display: flex; align-items: center; gap: 10px; }
 .portal-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--navy-dark); font-size: 0.9rem; }
-.portal-username { color: var(--white); font-size: 0.875rem; }
+.portal-username { color: var(--white); font-size: 0.875rem; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .portal-body { display: grid; grid-template-columns: 220px 1fr; gap: 0; min-height: calc(100vh - 68px); }
 .portal-sidebar { background: var(--white); padding: 1.5rem; border-right: 1px solid var(--gray-200); }
 .portal-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; color: var(--gray-600); cursor: pointer; transition: var(--transition); margin-bottom: 4px; }
@@ -1789,13 +1791,16 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
   <div id="portalDash" style="display:none;">
     <div class="portal-header">
       <div class="portal-logo">
-        <div class="nav-logo" style="width:36px;height:36px;font-size:1rem;">F</div>
-        <span>FERDEW Student Portal</span>
+        <div class="nav-logo" style="width:36px;height:36px;font-size:1rem;flex-shrink:0;">F</div>
+        <div style="display:flex;flex-direction:column;line-height:1.2;">
+          <span style="color:var(--white);font-family:var(--font-head);font-weight:700;font-size:0.95rem;">FERDEW</span>
+          <span style="color:var(--gold-light);font-size:0.7rem;letter-spacing:0.05em;">Student Portal</span>
+        </div>
       </div>
       <div class="portal-user">
         <div class="portal-avatar" id="portalAvatarInitial">A</div>
-        <span class="portal-username" id="portalUserName">Student</span>
-        <button onclick="portalLogout()" style="background:rgba(255,255,255,0.1);border:none;color:var(--white);font-size:0.8rem;padding:6px 12px;border-radius:6px;cursor:pointer;margin-left:8px;">Logout</button>
+        <span class="portal-username" id="portalUserName" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Student</span>
+        <button onclick="portalLogout()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);font-size:0.78rem;padding:5px 10px;border-radius:6px;cursor:pointer;margin-left:6px;white-space:nowrap;">Logout</button>
       </div>
     </div>
     <div class="portal-body">
