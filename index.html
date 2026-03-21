@@ -477,6 +477,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
   .profile-row { grid-template-columns: 1fr 1fr; }
   .hero-btns { flex-direction: column; }
   .step-item { flex-direction: column; gap: 12px; }
+  #dashMobileSelect { display: block !important; }
 }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -1615,28 +1616,67 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
 <!-- ===== ADMIN DASHBOARD ===== -->
 <!-- ========================================= -->
 <section id="page-admin" class="page-section">
+
   <!-- LOGIN SCREEN -->
-  <div id="adminLogin" class="login-wrap">
-    <div class="login-card">
-      <div class="login-logo">F</div>
-      <h2>Admin Portal</h2>
-      <p class="sub">FERDEW Secondary School Administration</p>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label>Email Address</label>
-        <input type="email" id="adminEmail" placeholder="admin@ferdew.edu.ng" value="ferdew31@gmail.com">
+  <div id="adminLogin" style="min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(135deg,var(--navy-dark),var(--navy));">
+    <!-- Admin Login Top Bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 5%;background:rgba(0,0,0,0.2);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;color:var(--navy-dark);font-size:1rem;flex-shrink:0;">F</div>
+        <div style="line-height:1.2;">
+          <div style="color:var(--white);font-family:var(--font-head);font-weight:700;font-size:0.95rem;">FERDEW</div>
+          <div style="color:var(--gold-light);font-size:0.7rem;letter-spacing:0.05em;">Admin Portal</div>
+        </div>
       </div>
-      <div class="form-group" style="margin-bottom:1.5rem;">
-        <label>Password</label>
-        <input type="password" id="adminPass" placeholder="••••••••" value="">
+      <button onclick="showPage('home')" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);font-size:0.8rem;padding:6px 14px;border-radius:6px;cursor:pointer;">← Back to Website</button>
+    </div>
+    <!-- Login Card -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;">
+      <div class="login-card">
+        <div class="login-logo">🔐</div>
+        <h2>Admin Login</h2>
+        <p class="sub">FERDEW Secondary School Administration</p>
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label>Email Address</label>
+          <input type="email" id="adminEmail" placeholder="admin@ferdew.edu.ng" value="ferdew31@gmail.com">
+        </div>
+        <div class="form-group" style="margin-bottom:1.5rem;">
+          <label>Password</label>
+          <input type="password" id="adminPass" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="adminLogin()">Login to Dashboard</button>
+        <div class="login-err" id="adminErr">Invalid credentials. Please try again.</div>
+        <div style="margin-top:1rem;text-align:center;font-size:0.8rem;color:var(--gray-400);">Demo password: <strong>admin123</strong></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="adminLogin()">Login to Dashboard</button>
-      <div class="login-err" id="adminErr">Invalid credentials. Please try again.</div>
-      <div style="margin-top:1rem;text-align:center;font-size:0.8rem;color:var(--gray-400);">Demo password: <strong>admin123</strong></div>
     </div>
   </div>
 
   <!-- DASHBOARD -->
-  <div id="adminDash" class="dashboard-wrap" style="display:none;">
+  <div id="adminDash" style="display:none;min-height:100vh;flex-direction:column;">
+    <!-- Dashboard Top Bar (visible on all screens) -->
+    <div style="background:var(--navy-dark);padding:12px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100;">
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;color:var(--navy-dark);font-size:1rem;flex-shrink:0;">F</div>
+        <div style="line-height:1.2;">
+          <div style="color:var(--white);font-family:var(--font-head);font-weight:700;font-size:0.95rem;">FERDEW</div>
+          <div style="color:var(--gold-light);font-size:0.7rem;letter-spacing:0.05em;">Admin Dashboard</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <!-- Mobile nav dropdown -->
+        <select onchange="switchDashMobile(this.value)" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);padding:6px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;display:none;" id="dashMobileSelect">
+          <option value="overview">📊 Overview</option>
+          <option value="applications">📋 Applications</option>
+          <option value="boarding">🏠 Boarding</option>
+          <option value="news">📰 News</option>
+          <option value="gallery">🖼️ Gallery</option>
+          <option value="students">🎓 Students</option>
+        </select>
+        <button onclick="adminLogout()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);font-size:0.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;">🚪 Logout</button>
+      </div>
+    </div>
+    <!-- Dashboard Body -->
+    <div style="display:flex;flex:1;">
     <div class="dash-sidebar">
       <div class="dash-logo">
         <div class="dash-logo-icon">F</div>
@@ -1757,7 +1797,8 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
     </div>
-  </div>
+    </div><!-- end dashboard body flex -->
+  </div><!-- end adminDash -->
 </section>
 
 <!-- ========================================= -->
@@ -1765,24 +1806,38 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
 <!-- ========================================= -->
 <section id="page-portal" class="page-section">
   <!-- PORTAL LOGIN -->
-  <div id="portalLogin" class="login-wrap">
-    <div class="login-card">
-      <div class="login-logo" style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:var(--white);">🎓</div>
-      <h2>Student Portal</h2>
-      <p class="sub">Enter your admission number and password to access your portal</p>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label>Admission Number</label>
-        <input type="text" id="portalAdmNo" placeholder="e.g. FER/2025/001">
+  <div id="portalLogin" style="min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(135deg,var(--navy-dark),var(--navy));">
+    <!-- Portal Login Top Bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 5%;background:rgba(0,0,0,0.2);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;color:var(--navy-dark);font-size:1rem;flex-shrink:0;">F</div>
+        <div style="line-height:1.2;">
+          <div style="color:var(--white);font-family:var(--font-head);font-weight:700;font-size:0.95rem;">FERDEW</div>
+          <div style="color:var(--gold-light);font-size:0.7rem;letter-spacing:0.05em;">Student Portal</div>
+        </div>
       </div>
-      <div class="form-group" style="margin-bottom:1.5rem;">
-        <label>Password</label>
-        <input type="password" id="portalPass" placeholder="••••••••">
-      </div>
-      <button class="btn btn-navy btn-full" onclick="portalLogin()">Login to Portal</button>
-      <div class="login-err" id="portalErr">Invalid admission number or password.</div>
-      <div style="margin-top:1rem;text-align:center;font-size:0.8rem;color:var(--gray-400);">Demo: <strong>FER/2025/001</strong> / password: <strong>student123</strong></div>
-      <div style="margin-top:1rem;text-align:center;">
-        <a href="https://wa.me/2348150898386" target="_blank" style="font-size:0.85rem;color:var(--navy);font-weight:600;">Forgot password? WhatsApp us →</a>
+      <button onclick="showPage('home')" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);font-size:0.8rem;padding:6px 14px;border-radius:6px;cursor:pointer;">← Back to Website</button>
+    </div>
+    <!-- Login Card -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;">
+      <div class="login-card">
+        <div class="login-logo" style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:var(--white);">🎓</div>
+        <h2>Student Portal</h2>
+        <p class="sub">Enter your admission number and password to access your portal</p>
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label>Admission Number</label>
+          <input type="text" id="portalAdmNo" placeholder="e.g. FER/2025/001">
+        </div>
+        <div class="form-group" style="margin-bottom:1.5rem;">
+          <label>Password</label>
+          <input type="password" id="portalPass" placeholder="••••••••">
+        </div>
+        <button class="btn btn-navy btn-full" onclick="portalLogin()">Login to Portal</button>
+        <div class="login-err" id="portalErr">Invalid admission number or password.</div>
+        <div style="margin-top:1rem;text-align:center;font-size:0.8rem;color:var(--gray-400);">Demo: <strong>FER/2025/001</strong> / password: <strong>student123</strong></div>
+        <div style="margin-top:1rem;text-align:center;">
+          <a href="https://wa.me/2348150898386" target="_blank" style="font-size:0.85rem;color:var(--navy);font-weight:600;">Forgot password? WhatsApp us →</a>
+        </div>
       </div>
     </div>
   </div>
@@ -1965,9 +2020,9 @@ try {
 
 // ===== EMAILJS CONFIG =====
 // TODO: Replace with your actual EmailJS credentials
-const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID = 'service_teghd5a';
+const EMAILJS_TEMPLATE_ID = 'template_q4a38sb';
+const EMAILJS_PUBLIC_KEY = 'YLTc4P57NNq2WrTG3';
 
 // Load EmailJS
 const ejsScript = document.createElement('script');
@@ -1982,6 +2037,12 @@ function showPage(page) {
   document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
   const navEl = document.getElementById(`nav-${page}`);
   if (navEl) navEl.classList.add('active');
+  // Hide main navbar & WA button on portal/admin pages (they have their own headers)
+  const hideNav = page === 'portal' || page === 'admin';
+  document.getElementById('navbar').style.display = hideNav ? 'none' : '';
+  document.getElementById('mobileMenu').style.display = 'none';
+  document.getElementById('hamburger').classList.remove('open');
+  document.querySelector('.wa-float').style.display = hideNav ? 'none' : '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (page === 'home') initStats();
 }
@@ -2090,9 +2151,11 @@ async function submitAdmission(e) {
   // Send email via EmailJS
   try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: 'ferdew31@gmail.com',
-      subject: `New Admission Application — ${data.firstName} ${data.lastName}`,
-      message: `New application received:\n\nName: ${data.firstName} ${data.lastName}\nClass: ${data.class}\nType: ${data.type}\nParent: ${data.parent}\nPhone: ${data.phone}\nEmail: ${data.email}\nSchool: ${data.school}\nPayment Method: ${data.paymentMethod}`
+      from_name: `${data.firstName} ${data.lastName}`,
+      from_email: data.email,
+      phone: data.phone,
+      subject: `New Admission Application — ${data.class} (${data.type})`,
+      message: `New admission application received:\n\nStudent: ${data.firstName} ${data.lastName}\nDOB: ${data.dob}\nGender: ${data.gender}\nClass: ${data.class}\nType: ${data.type}\nParent: ${data.parent}\nPhone: ${data.phone}\nAddress: ${data.address}\nPrevious School: ${data.school}\nExtra Info: ${data.info || 'None'}\nPayment Method: ${data.paymentMethod}`
     });
   } catch(err) { console.log('EmailJS:', err); }
 
@@ -2166,9 +2229,11 @@ async function submitBoarding(e) {
 
   try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: 'ferdew31@gmail.com',
+      from_name: data.name,
+      from_email: 'ferdew31@gmail.com',
+      phone: data.phone,
       subject: `New Boarding Application — ${data.name}`,
-      message: `Boarding application:\n\nName: ${data.name}\nClass: ${data.class}\nGender: ${data.gender}\nParent: ${data.parent}\nPhone: ${data.phone}`
+      message: `New boarding application:\n\nStudent: ${data.name}\nAdmission No: ${data.admNo || 'New Student'}\nClass: ${data.class}\nGender: ${data.gender}\nParent: ${data.parent}\nPhone: ${data.phone}\nEmergency Contact: ${data.emergency || 'None'}\nMedical Info: ${data.medical || 'None'}`
     });
   } catch(err) { console.log('EmailJS:', err); }
 
@@ -2198,9 +2263,11 @@ async function submitContact(e) {
 
   try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: 'ferdew31@gmail.com',
-      subject: `Contact Form: ${data.subject} — ${data.name}`,
-      message: `From: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email}\nSubject: ${data.subject}\n\nMessage:\n${data.message}`
+      from_name: data.name,
+      from_email: data.email,
+      phone: data.phone,
+      subject: data.subject,
+      message: data.message
     });
   } catch(err) { console.log('EmailJS:', err); }
 
@@ -2233,13 +2300,26 @@ function adminLogout() {
   document.getElementById('adminDash').style.display = 'none';
   document.getElementById('adminLogin').style.display = 'flex';
   document.getElementById('adminPass').value = '';
+  showPage('home');
+}
+
+function switchDashMobile(val) {
+  switchDashByName(val);
 }
 
 function switchDash(section) {
-  document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
-  document.getElementById(`dash-${section}`).classList.add('active');
+  switchDashByName(section);
+  // sync mobile select
+  const sel = document.getElementById('dashMobileSelect');
+  if (sel) sel.value = section;
+  // update sidebar active
   document.querySelectorAll('.dash-nav-item').forEach(n => n.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  event?.currentTarget?.classList.add('active');
+}
+
+function switchDashByName(section) {
+  document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`dash-${section}`)?.classList.add('active');
 }
 
 async function loadAdminData() {
@@ -2436,6 +2516,7 @@ function portalLogout() {
   if (firebaseReady) try { auth.signOut(); } catch(e){}
   document.getElementById('portalAdmNo').value = '';
   document.getElementById('portalPass').value = '';
+  showPage('home');
 }
 
 function switchPortal(section) {
