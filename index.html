@@ -2444,7 +2444,7 @@ async function submitAdmission(e) {
     from_name: `${data.firstName} ${data.lastName}`,
     from_email: data.email,
     phone: data.phone,
-    subject: `New Admission Application — ${data.class} (${data.type})`,
+    from_subject: `New Admission Application — ${data.class} (${data.type})`,
     message: `New admission application received:\n\nStudent: ${data.firstName} ${data.lastName}\nDOB: ${data.dob}\nGender: ${data.gender}\nClass: ${data.class}\nType: ${data.type}\nParent: ${data.parent}\nPhone: ${data.phone}\nAddress: ${data.address}\nPrevious School: ${data.school}\nExtra Info: ${data.info || 'None'}\nPayment Method: ${data.paymentMethod}`
   });
 
@@ -2518,9 +2518,9 @@ async function submitBoarding(e) {
 
   await sendEmail({
     from_name: data.name,
-    from_email: 'ferdew31@gmail.com',
+    from_email: data.phone + '@boarding.ferdew.ng',
     phone: data.phone,
-    subject: `New Boarding Application — ${data.name}`,
+    from_subject: `New Boarding Application — ${data.name}`,
     message: `New boarding application:\n\nStudent: ${data.name}\nAdmission No: ${data.admNo || 'New Student'}\nClass: ${data.class}\nGender: ${data.gender}\nParent: ${data.parent}\nPhone: ${data.phone}\nEmergency Contact: ${data.emergency || 'None'}\nMedical Info: ${data.medical || 'None'}`
   });
 
@@ -2552,7 +2552,7 @@ async function submitContact(e) {
     from_name: data.name,
     from_email: data.email,
     phone: data.phone,
-    subject: data.subject,
+    from_subject: data.subject,
     message: data.message
   });
 
