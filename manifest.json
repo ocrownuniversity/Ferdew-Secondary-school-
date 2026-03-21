@@ -1,0 +1,86 @@
+{
+  "name": "FERDEW Secondary School",
+  "short_name": "FERDEW",
+  "description": "Excellence in Education — Day & Boarding School, Alakia, Ibadan",
+  "start_url": "/Ferdew-Secondary-school-/",
+  "scope": "/Ferdew-Secondary-school-/",
+  "display": "standalone",
+  "background_color": "#071430",
+  "theme_color": "#0B1F4B",
+  "orientation": "portrait-primary",
+  "lang": "en-NG",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=72&bold=true&font-size=0.6",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=96&bold=true&font-size=0.6",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=128&bold=true&font-size=0.6",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=144&bold=true&font-size=0.6",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=152&bold=true&font-size=0.6",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=192&bold=true&font-size=0.6",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=384&bold=true&font-size=0.6",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=512&bold=true&font-size=0.6",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Student Portal",
+      "short_name": "Portal",
+      "description": "Access student portal",
+      "url": "/Ferdew-Secondary-school-/#portal",
+      "icons": [{ "src": "https://ui-avatars.com/api/?name=SP&background=0B1F4B&color=C9962A&size=96", "sizes": "96x96" }]
+    },
+    {
+      "name": "Apply Now",
+      "short_name": "Admissions",
+      "description": "Apply for admission",
+      "url": "/Ferdew-Secondary-school-/#admissions",
+      "icons": [{ "src": "https://ui-avatars.com/api/?name=AN&background=C9962A&color=071430&size=96", "sizes": "96x96" }]
+    },
+    {
+      "name": "Contact Us",
+      "short_name": "Contact",
+      "description": "Contact the school",
+      "url": "/Ferdew-Secondary-school-/#contact",
+      "icons": [{ "src": "https://ui-avatars.com/api/?name=CU&background=0B1F4B&color=C9962A&size=96", "sizes": "96x96" }]
+    }
+  ]
+}

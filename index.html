@@ -11,9 +11,11 @@
 <meta property="og:type" content="website">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0B1F4B">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FERDEW School">
+<link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=F&background=C9962A&color=071430&size=192&bold=true&font-size=0.6">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -502,6 +504,21 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
 </style>
 </head>
 <body>
+
+<!-- ===== PWA INSTALL BANNER ===== -->
+<div id="pwaBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:var(--navy-dark);padding:14px 5%;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.3);flex-wrap:wrap;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="width:44px;height:44px;border-radius:12px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;font-size:1.2rem;color:var(--navy-dark);flex-shrink:0;">F</div>
+    <div>
+      <div style="color:var(--white);font-weight:700;font-size:0.9rem;">Install FERDEW School App</div>
+      <div style="color:rgba(255,255,255,0.6);font-size:0.78rem;">Add to home screen for the best experience</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0;">
+    <button onclick="dismissPWA()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);padding:8px 16px;border-radius:8px;font-size:0.85rem;cursor:pointer;">Not Now</button>
+    <button onclick="installPWA()" style="background:var(--gold);border:none;color:var(--navy-dark);padding:8px 20px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">📲 Install</button>
+  </div>
+</div>
 
 <!-- ===== FLOATING WA BUTTON ===== -->
 <a href="https://wa.me/2348150898386" target="_blank" class="wa-float" aria-label="Chat on WhatsApp">
@@ -4044,19 +4061,44 @@ function markNoticesSeen() {
   if (badge) badge.style.display = 'none';
 }
 
-// ===== PWA SERVICE WORKER =====
+// ===== PWA INSTALL PROMPT =====
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!sessionStorage.getItem('pwaDismissed')) {
+    const banner = document.getElementById('pwaBanner');
+    if (banner) banner.style.display = 'flex';
+  }
+});
+window.addEventListener('appinstalled', () => {
+  const banner = document.getElementById('pwaBanner');
+  if (banner) banner.style.display = 'none';
+  deferredPrompt = null;
+});
+async function installPWA() {
+  if (!deferredPrompt) {
+    alert('To install:\n\nAndroid (Chrome):\nTap ⋮ menu → "Add to Home screen"\n\niPhone (Safari):\nTap Share button → "Add to Home Screen"');
+    return;
+  }
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  const banner = document.getElementById('pwaBanner');
+  if (banner) banner.style.display = 'none';
+}
+function dismissPWA() {
+  const banner = document.getElementById('pwaBanner');
+  if (banner) banner.style.display = 'none';
+  sessionStorage.setItem('pwaDismissed', '1');
+}
+
+// ===== SERVICE WORKER =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // Register inline service worker
-    const swContent = `
-      const CACHE = 'ferdew-v1';
-      const ASSETS = ['/'];
-      self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))));
-      self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-    `;
-    const blob = new Blob([swContent], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).catch(() => {});
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('✅ SW registered:', reg.scope))
+      .catch(err => console.log('SW not available:', err.message));
   });
 }
 
