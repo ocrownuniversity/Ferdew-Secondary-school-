@@ -9,6 +9,12 @@
 <meta property="og:title" content="FERDEW Secondary School | Alakia, Ibadan">
 <meta property="og:description" content="Excellence in Education — Day & Boarding School, JSS1–SSS3, Alakia, Ibadan.">
 <meta property="og:type" content="website">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B1F4B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FERDEW School">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -518,6 +524,8 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
     <a href="#" onclick="showPage('news')" id="nav-news">News</a>
     <a href="#" onclick="showPage('gallery')" id="nav-gallery">Gallery</a>
     <a href="#" onclick="showPage('contact')" id="nav-contact">Contact</a>
+    <a href="#" onclick="showPage('testimonials')" id="nav-testimonials">Testimonials</a>
+    <a href="#" onclick="showPage('alumni')" id="nav-alumni">Alumni</a>
   </div>
   <div class="nav-cta">
     <button class="btn btn-primary btn-sm" onclick="showPage('admissions')">Apply Now</button>
@@ -537,6 +545,8 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
   <a href="#" onclick="showPage('news');closeMobile()">📰 News & Events</a>
   <a href="#" onclick="showPage('gallery');closeMobile()">🖼️ Gallery</a>
   <a href="#" onclick="showPage('contact');closeMobile()">📞 Contact</a>
+  <a href="#" onclick="showPage('testimonials');closeMobile()">⭐ Testimonials</a>
+  <a href="#" onclick="showPage('alumni');closeMobile()">🎓 Alumni Network</a>
   <a href="#" onclick="showPage('admin');closeMobile()" style="margin-top:1rem;border-top:1px solid rgba(255,255,255,0.1);padding-top:1rem;">🔐 Admin Portal</a>
   <a href="#" onclick="showPage('portal');closeMobile()">🎓 Student Portal</a>
   <button class="btn btn-primary btn-full" style="margin-top:1rem" onclick="showPage('admissions');closeMobile()">Apply Now</button>
@@ -751,6 +761,8 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <li><a href="#" onclick="showPage('boarding')">Boarding House</a></li>
           <li><a href="#" onclick="showPage('academics')">Academics</a></li>
           <li><a href="#" onclick="showPage('gallery')">Gallery</a></li>
+          <li><a href="#" onclick="showPage('testimonials')">Testimonials</a></li>
+          <li><a href="#" onclick="showPage('alumni')">Alumni Network</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -985,6 +997,10 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
               <p>Successful candidates receive an official admission letter via email and SMS with further instructions.</p>
             </div>
           </div>
+        </div>
+        <div style="margin-top:1rem;background:var(--navy-dark);border-radius:var(--radius);padding:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div><div style="font-weight:700;color:var(--gold-light);margin-bottom:0.25rem;">📥 Download School Prospectus</div><div style="font-size:0.8rem;color:rgba(255,255,255,0.6);">Full details about FERDEW — fees, subjects, facilities and more.</div></div>
+          <button onclick="generateProspectus()" class="btn btn-primary btn-sm">Download PDF →</button>
         </div>
         <div style="margin-top:1.5rem;background:var(--gold-pale);border:1px solid rgba(201,150,42,0.3);border-radius:var(--radius);padding:1rem;">
           <div style="font-weight:700;color:var(--navy);margin-bottom:0.25rem;">📌 Application Deadline</div>
@@ -1707,10 +1723,12 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <option value="overview">📊 Overview</option>
           <option value="applications">📋 Applications</option>
           <option value="boarding">🏠 Boarding</option>
-          <option value="fees">💳 Fee Payments</option>
+          <option value="feepayments">💳 Fee Payments</option>
           <option value="news">📰 News</option>
           <option value="gallery">🖼️ Gallery</option>
-          <option value="feepayments">💳 Fee Payments</option>
+          <option value="staff">👩‍🏫 Staff</option>
+          <option value="attendance">📅 Attendance</option>
+          <option value="whatsapp">💬 WhatsApp</option>
           <option value="students">🎓 Students</option>
         </select>
         <button onclick="adminLogout()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);font-size:0.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;">🚪 Logout</button>
@@ -1726,12 +1744,13 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
       <div class="dash-nav">
         <div class="dash-nav-item active" onclick="switchDash('overview')"><span class="icon">📊</span> Overview</div>
         <div class="dash-nav-item" onclick="switchDash('applications')"><span class="icon">📋</span> Applications</div>
-        <div class="dash-nav-item" onclick="switchDash('payments')"><span class="icon">💳</span> Payments</div>
         <div class="dash-nav-item" onclick="switchDash('boarding')"><span class="icon">🏠</span> Boarding</div>
-        <div class="dash-nav-item" onclick="switchDash('fees')"><span class="icon">💳</span> Fee Payments</div>
+        <div class="dash-nav-item" onclick="switchDash('feepayments')"><span class="icon">💳</span> Fee Payments</div>
         <div class="dash-nav-item" onclick="switchDash('news')"><span class="icon">📰</span> News Posts</div>
         <div class="dash-nav-item" onclick="switchDash('gallery')"><span class="icon">🖼️</span> Gallery</div>
-        <div class="dash-nav-item" onclick="switchDash('feepayments')"><span class="icon">💳</span> Fee Payments</div>
+        <div class="dash-nav-item" onclick="switchDash('staff')"><span class="icon">👩‍🏫</span> Staff</div>
+        <div class="dash-nav-item" onclick="switchDash('attendance')"><span class="icon">📅</span> Attendance</div>
+        <div class="dash-nav-item" onclick="switchDash('whatsapp')"><span class="icon">💬</span> WhatsApp Blast</div>
         <div class="dash-nav-item" onclick="switchDash('students')"><span class="icon">🎓</span> Students</div>
       </div>
       <div style="margin-top:auto;">
@@ -1907,6 +1926,76 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
 
+      <!-- STAFF MANAGEMENT -->
+      <div class="dash-section" id="dash-staff">
+        <div class="dash-header"><h2>Staff Management</h2></div>
+        <div class="form-wrap" style="margin-bottom:2rem;">
+          <h3 class="form-title">Add Staff Member</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Full Name</label><input type="text" id="staff_name" placeholder="Staff full name"></div>
+            <div class="form-group"><label>Role</label>
+              <select id="staff_role">
+                <option>Teacher</option><option>Vice Principal</option><option>Housemaster</option><option>Housemistress</option><option>Bursar</option><option>Admin Staff</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Subject(s)</label><input type="text" id="staff_subject" placeholder="e.g. Mathematics, Physics"></div>
+            <div class="form-group"><label>Phone</label><input type="tel" id="staff_phone" placeholder="08XXXXXXXXX"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:1rem;" onclick="addStaff()">Add Staff Member</button>
+          <div class="form-success" id="staffSuccess">✅ Staff member added successfully!</div>
+        </div>
+        <div class="dash-table-wrap">
+          <h3 style="margin-bottom:1rem;">All Staff</h3>
+          <table class="dash-table">
+            <thead><tr><th>Name</th><th>Role</th><th>Subject(s)</th><th>Phone</th></tr></thead>
+            <tbody id="staffList"><tr><td colspan="4" style="text-align:center;color:var(--gray-400);padding:2rem;">No staff added yet. Click "Add Staff Member" above.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ATTENDANCE TRACKER -->
+      <div class="dash-section" id="dash-attendance">
+        <div class="dash-header"><h2>Attendance Tracker</h2><span style="font-size:0.875rem;color:var(--gray-600);" id="attDate"></span></div>
+        <div class="dash-table-wrap">
+          <div style="display:flex;gap:12px;margin-bottom:1rem;flex-wrap:wrap;">
+            <select id="attClass" style="padding:8px 12px;font-size:0.875rem;border:1.5px solid var(--gray-200);border-radius:8px;" onchange="loadAttendanceClass()">
+              <option value="">Select Class</option>
+              <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
+              <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="saveAttendance()">💾 Save Attendance</button>
+          </div>
+          <div id="attendanceGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+            <div style="text-align:center;padding:2rem;color:var(--gray-400);grid-column:1/-1;">Select a class to mark attendance.</div>
+          </div>
+          <div class="form-success" id="attSuccess" style="margin-top:1rem;">✅ Attendance saved successfully!</div>
+        </div>
+      </div>
+
+      <!-- WHATSAPP BULK MESSAGE -->
+      <div class="dash-section" id="dash-whatsapp">
+        <div class="dash-header"><h2>💬 WhatsApp Blast</h2></div>
+        <div class="form-wrap">
+          <h3 class="form-title">Send Bulk Message to Parents</h3>
+          <p class="form-subtitle">Compose a message and share it easily via WhatsApp to all parents.</p>
+          <div style="margin-bottom:1rem;">
+            <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:6px;">Quick Templates</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" onclick="setTemplate('fees')">💰 Fees Reminder</button>
+              <button class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" onclick="setTemplate('exam')">📝 Exam Notice</button>
+              <button class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" onclick="setTemplate('event')">📅 Event Notice</button>
+              <button class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" onclick="setTemplate('resume')">🏫 Resumption</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>Your Message *</label>
+            <textarea id="bulkMsg" style="min-height:150px;" placeholder="Type your message here..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="openBulkWhatsApp()">📤 Send via WhatsApp →</button>
+          <p style="font-size:0.8rem;color:var(--gray-400);margin-top:0.75rem;">This will open WhatsApp with your message pre-filled. Copy the link to share with multiple parents.</p>
+        </div>
+      </div>
+
       <!-- STUDENTS -->
       <div class="dash-section" id="dash-students">
         <div class="dash-header"><h2>Student Accounts</h2></div>
@@ -1991,9 +2080,9 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
       <div class="portal-sidebar">
         <div class="portal-nav-item active" onclick="switchPortal('profile')">👤 My Profile</div>
         <div class="portal-nav-item" onclick="switchPortal('timetable')">📅 Timetable</div>
-        <div class="portal-nav-item" onclick="switchPortal('results')">📊 Results</div>
+        <div class="portal-nav-item" onclick="switchPortal('results')">📊 Results <button onclick="generateReportCard()" style="float:right;background:var(--gold);border:none;color:var(--navy-dark);font-size:0.7rem;padding:2px 7px;border-radius:4px;cursor:pointer;">PDF</button></div>
         <div class="portal-nav-item" onclick="switchPortal('fees')" style="color:var(--gold);font-weight:700;">💳 Pay Fees</div>
-        <div class="portal-nav-item" onclick="switchPortal('notices')">📢 Notices</div>
+        <div class="portal-nav-item" onclick="switchPortal('notices');markNoticesSeen()">📢 Notices <span id="noticeBadge" style="display:none;background:var(--danger);color:white;font-size:0.65rem;padding:1px 6px;border-radius:100px;margin-left:4px;"></span></div>
       </div>
       <div class="portal-main">
         <!-- MOBILE NAV -->
@@ -2256,6 +2345,247 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
 </section>
 
 <!-- ========================================= -->
+<!-- ===== TESTIMONIALS PAGE ===== -->
+<!-- ========================================= -->
+<section id="page-testimonials" class="page-section">
+  <div class="page-hero">
+    <span class="section-tag">What They Say</span>
+    <h1>Testimonials</h1>
+    <p>Hear from our parents, students, and alumni about their experience at FERDEW Secondary School.</p>
+  </div>
+
+  <div class="section-wrap">
+    <div class="section-header center fade-in">
+      <span class="section-tag">Parent Reviews</span>
+      <h2 class="section-title">What Parents Say</h2>
+      <div class="gold-divider center"></div>
+    </div>
+    <div class="cards-grid col-3 fade-in" id="testimonialsGrid">
+      <div class="card" style="border-top:4px solid var(--gold);">
+        <div style="display:flex;gap:4px;color:var(--gold);margin-bottom:1rem;">★★★★★</div>
+        <p style="font-style:italic;color:var(--gray-600);line-height:1.8;margin-bottom:1rem;">"FERDEW has transformed my son completely. From a shy boy to a confident young man who passed his WAEC with 8 A's. I recommend this school to every parent in Ibadan."</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:auto;">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--white);font-weight:700;flex-shrink:0;">AO</div>
+          <div><div style="font-weight:700;font-size:0.9rem;">Mrs. Adunola Okafor</div><div style="font-size:0.78rem;color:var(--gray-400);">Parent of SS3 Graduate</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--navy);">
+        <div style="display:flex;gap:4px;color:var(--gold);margin-bottom:1rem;">★★★★★</div>
+        <p style="font-style:italic;color:var(--gray-600);line-height:1.8;margin-bottom:1rem;">"The boarding facility is excellent. My daughter is safe, well-fed and learning in a very conducive environment. The teachers are dedicated and always available to help."</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:auto;">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:var(--navy-dark);font-weight:700;flex-shrink:0;">BT</div>
+          <div><div style="font-weight:700;font-size:0.9rem;">Mr. Babatunde Taiwo</div><div style="font-size:0.78rem;color:var(--gray-400);">Parent of SSS2 Student</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--gold);">
+        <div style="display:flex;gap:4px;color:var(--gold);margin-bottom:1rem;">★★★★★</div>
+        <p style="font-style:italic;color:var(--gray-600);line-height:1.8;margin-bottom:1rem;">"My twin boys have been at FERDEW for 4 years. The academic standard is outstanding and the moral values they instil in students are second to none. God bless FERDEW!"</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:auto;">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--white);font-weight:700;flex-shrink:0;">FO</div>
+          <div><div style="font-weight:700;font-size:0.9rem;">Mrs. Folake Olawale</div><div style="font-size:0.78rem;color:var(--gray-400);">Parent of JSS3 Students</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--navy);">
+        <div style="display:flex;gap:4px;color:var(--gold);margin-bottom:1rem;">★★★★★</div>
+        <p style="font-style:italic;color:var(--gray-600);line-height:1.8;margin-bottom:1rem;">"Since my daughter moved to FERDEW from her former school, her grades have improved drastically. The small class sizes mean teachers give personal attention to every child."</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:auto;">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:var(--navy-dark);font-weight:700;flex-shrink:0;">KA</div>
+          <div><div style="font-weight:700;font-size:0.9rem;">Dr. Kunle Adeyemi</div><div style="font-size:0.78rem;color:var(--gray-400);">Parent of SSS1 Student</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--gold);">
+        <div style="display:flex;gap:4px;color:var(--gold);margin-bottom:1rem;">★★★★★</div>
+        <p style="font-style:italic;color:var(--gray-600);line-height:1.8;margin-bottom:1rem;">"FERDEW is not just a school, it's a community. Parents are always kept informed and involved. The principal is very approachable and truly cares about every student."</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:auto;">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--white);font-weight:700;flex-shrink:0;">YB</div>
+          <div><div style="font-weight:700;font-size:0.9rem;">Mrs. Yetunde Balogun</div><div style="font-size:0.78rem;color:var(--gray-400);">Parent of JSS1 Student</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--navy);">
+        <div style="display:flex;gap:4px;color:var(--gold);margin-bottom:1rem;">★★★★★</div>
+        <p style="font-style:italic;color:var(--gray-600);line-height:1.8;margin-bottom:1rem;">"My son scored 312 in JAMB after attending FERDEW. The JAMB coaching programme here is exceptional. Every SS3 student gets individual attention. Worth every naira!"</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:auto;">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:var(--navy-dark);font-weight:700;flex-shrink:0;">IO</div>
+          <div><div style="font-weight:700;font-size:0.9rem;">Engr. Idowu Ogunleye</div><div style="font-size:0.78rem;color:var(--gray-400);">Parent of SS3 Graduate</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDENT TESTIMONIALS -->
+  <div class="section-wrap gray">
+    <div class="section-header center fade-in">
+      <span class="section-tag">Student Voices</span>
+      <h2 class="section-title">What Students Say</h2>
+      <div class="gold-divider center"></div>
+    </div>
+    <div class="cards-grid col-3 fade-in">
+      <div class="card" style="background:var(--navy-dark);color:var(--white);">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">❝</div>
+        <p style="font-style:italic;color:rgba(255,255,255,0.8);line-height:1.8;margin-bottom:1rem;">"FERDEW gave me the confidence to dream big. I passed WAEC with 9 A's and got admitted to study Medicine at UI. Forever grateful to my teachers here!"</p>
+        <div style="color:var(--gold-light);font-weight:700;font-size:0.9rem;">Chiamaka Nwosu</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.4);">2024 Graduate — Medicine, University of Ibadan</div>
+      </div>
+      <div class="card" style="background:var(--navy-dark);color:var(--white);">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">❝</div>
+        <p style="font-style:italic;color:rgba(255,255,255,0.8);line-height:1.8;margin-bottom:1rem;">"The debate club at FERDEW changed my life. I used to be so quiet but now I speak at events. The extracurricular activities here are truly world class."</p>
+        <div style="color:var(--gold-light);font-weight:700;font-size:0.9rem;">Tolu Adeleke</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.4);">SSS3 Student — Arts</div>
+      </div>
+      <div class="card" style="background:var(--navy-dark);color:var(--white);">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">❝</div>
+        <p style="font-style:italic;color:rgba(255,255,255,0.8);line-height:1.8;margin-bottom:1rem;">"As a boarding student, FERDEW feels like home. The food is good, the rooms are clean and the housemasters genuinely care about our welfare. Best decision ever."</p>
+        <div style="color:var(--gold-light);font-weight:700;font-size:0.9rem;">Emeka Obi</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.4);">JSS3 Boarding Student</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT TESTIMONIAL -->
+  <div class="section-wrap">
+    <div class="section-header center fade-in">
+      <span class="section-tag">Share Your Story</span>
+      <h2 class="section-title">Leave a Testimonial</h2>
+      <div class="gold-divider center"></div>
+      <p class="section-subtitle">Are you a parent, student, or alumni? Share your FERDEW experience.</p>
+    </div>
+    <div style="max-width:600px;margin:0 auto;" class="fade-in">
+      <div class="form-wrap">
+        <form id="testimonialForm" onsubmit="submitTestimonial(event)">
+          <div class="form-grid">
+            <div class="form-group"><label>Full Name *</label><input type="text" id="test_name" required placeholder="Your full name"></div>
+            <div class="form-group"><label>Role *</label>
+              <select id="test_role" required>
+                <option value="">Select</option>
+                <option>Parent</option><option>Current Student</option><option>Alumni</option><option>Staff</option>
+              </select>
+            </div>
+            <div class="form-group full"><label>Your Testimonial *</label><textarea id="test_message" required placeholder="Share your experience at FERDEW..." style="min-height:120px;"></textarea></div>
+            <div class="form-group"><label>Rating *</label>
+              <select id="test_rating" required>
+                <option value="">Select rating</option>
+                <option value="5">★★★★★ Excellent</option>
+                <option value="4">★★★★☆ Very Good</option>
+                <option value="3">★★★☆☆ Good</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Phone (Optional)</label><input type="tel" id="test_phone" placeholder="08XXXXXXXXX"></div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Submit Testimonial →</button>
+          <div class="form-success" id="testSuccess">✅ Thank you! Your testimonial has been submitted and will be reviewed by our team.</div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer style="background:var(--navy-dark);color:var(--white);padding:30px 5%;text-align:center;">
+    <p style="font-size:0.85rem;color:rgba(255,255,255,0.5);">© 2025 FERDEW Secondary School</p>
+  </footer>
+</section>
+
+<!-- ========================================= -->
+<!-- ===== ALUMNI PAGE ===== -->
+<!-- ========================================= -->
+<section id="page-alumni" class="page-section">
+  <div class="page-hero">
+    <span class="section-tag">Our Legacy</span>
+    <h1>Alumni Network</h1>
+    <p>Once a FERDEW student, always a FERDEW family. Connect with fellow alumni and give back to your alma mater.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="section-wrap gray">
+    <div class="cards-grid col-3 fade-in">
+      <div class="card" style="text-align:center;border-top:4px solid var(--gold);">
+        <div style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--navy);">500+</div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.05em;">Registered Alumni</div>
+      </div>
+      <div class="card" style="text-align:center;border-top:4px solid var(--navy);">
+        <div style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--navy);">12</div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.05em;">Graduating Sets</div>
+      </div>
+      <div class="card" style="text-align:center;border-top:4px solid var(--gold);">
+        <div style="font-family:var(--font-head);font-size:2.5rem;font-weight:900;color:var(--navy);">6+</div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.05em;">Universities Represented</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTABLE ALUMNI -->
+  <div class="section-wrap">
+    <div class="section-header fade-in">
+      <span class="section-tag">Our Pride</span>
+      <h2 class="section-title">Notable Alumni</h2>
+      <div class="gold-divider"></div>
+    </div>
+    <div class="cards-grid col-3 fade-in">
+      <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;font-size:1.2rem;color:var(--navy-dark);flex-shrink:0;">CN</div>
+        <div><h4 style="font-size:0.95rem;margin-bottom:0.25rem;">Chiamaka Nwosu</h4><div style="font-size:0.78rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem;">Class of 2024</div><p style="font-size:0.82rem;color:var(--gray-600);">MBBS Student, University of Ibadan. Scored 9 A's in WAEC.</p></div>
+      </div>
+      <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;font-size:1.2rem;color:var(--white);flex-shrink:0;">DO</div>
+        <div><h4 style="font-size:0.95rem;margin-bottom:0.25rem;">David Okonkwo</h4><div style="font-size:0.78rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem;">Class of 2023</div><p style="font-size:0.82rem;color:var(--gray-600);">Engineering Student, OAU. National Science Olympiad finalist.</p></div>
+      </div>
+      <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;font-size:1.2rem;color:var(--navy-dark);flex-shrink:0;">AA</div>
+        <div><h4 style="font-size:0.95rem;margin-bottom:0.25rem;">Amaka Adeyemi</h4><div style="font-size:0.78rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem;">Class of 2022</div><p style="font-size:0.82rem;color:var(--gray-600);">Law Student, UNILAG. Best graduating student 2022.</p></div>
+      </div>
+      <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;font-size:1.2rem;color:var(--white);flex-shrink:0;">TB</div>
+        <div><h4 style="font-size:0.95rem;margin-bottom:0.25rem;">Tunde Bakare</h4><div style="font-size:0.78rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem;">Class of 2021</div><p style="font-size:0.82rem;color:var(--gray-600);">Computer Science, FUTA. Founded a tech startup in Ibadan.</p></div>
+      </div>
+      <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;font-size:1.2rem;color:var(--navy-dark);flex-shrink:0;">FI</div>
+        <div><h4 style="font-size:0.95rem;margin-bottom:0.25rem;">Fatima Ibrahim</h4><div style="font-size:0.78rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem;">Class of 2020</div><p style="font-size:0.82rem;color:var(--gray-600);">Pharmacy Student, ABU Zaria. National quiz champion 2020.</p></div>
+      </div>
+      <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:900;font-size:1.2rem;color:var(--white);flex-shrink:0;">SO</div>
+        <div><h4 style="font-size:0.95rem;margin-bottom:0.25rem;">Seun Olawale</h4><div style="font-size:0.78rem;color:var(--gold);font-weight:600;margin-bottom:0.25rem;">Class of 2019</div><p style="font-size:0.82rem;color:var(--gray-600);">Architecture Student, UNILAG. Inter-university design award winner.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER AS ALUMNI -->
+  <div class="section-wrap gray">
+    <div class="section-header center fade-in">
+      <span class="section-tag">Join the Network</span>
+      <h2 class="section-title">Register as Alumni</h2>
+      <div class="gold-divider center"></div>
+      <p class="section-subtitle">Connect with your classmates and give back to FERDEW.</p>
+    </div>
+    <div style="max-width:650px;margin:0 auto;" class="fade-in">
+      <div class="form-wrap">
+        <form id="alumniForm" onsubmit="submitAlumni(event)">
+          <div class="form-grid">
+            <div class="form-group"><label>Full Name *</label><input type="text" id="alm_name" required placeholder="Your full name"></div>
+            <div class="form-group"><label>Graduation Year *</label>
+              <select id="alm_year" required>
+                <option value="">Select year</option>
+                <option>2024</option><option>2023</option><option>2022</option><option>2021</option>
+                <option>2020</option><option>2019</option><option>2018</option><option>2017</option>
+                <option>2016</option><option>2015</option><option>Before 2015</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Phone Number *</label><input type="tel" id="alm_phone" required placeholder="08XXXXXXXXX"></div>
+            <div class="form-group"><label>Email Address *</label><input type="email" id="alm_email" required placeholder="your@email.com"></div>
+            <div class="form-group"><label>Current Occupation</label><input type="text" id="alm_job" placeholder="e.g. Medical Student, Engineer, Teacher"></div>
+            <div class="form-group"><label>Current Location</label><input type="text" id="alm_location" placeholder="e.g. Ibadan, Lagos, Abuja"></div>
+            <div class="form-group full"><label>Message to FERDEW (Optional)</label><textarea id="alm_message" placeholder="Share a memory or message for your alma mater..."></textarea></div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Register as Alumni →</button>
+          <div class="form-success" id="almSuccess">✅ Welcome back, FERDEW Alumni! Your registration is received. We'll add you to our alumni network and notify you of upcoming events.</div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer style="background:var(--navy-dark);color:var(--white);padding:30px 5%;text-align:center;">
+    <p style="font-size:0.85rem;color:rgba(255,255,255,0.5);">© 2025 FERDEW Secondary School · Alumni Network</p>
+  </footer>
+</section>
+
+<!-- ========================================= -->
 <!-- ===== JAVASCRIPT ===== -->
 <!-- ========================================= -->
 <script>
@@ -2351,11 +2681,13 @@ function initStats() {
   document.querySelectorAll('.stat-number[data-target]').forEach(el => {
     const target = parseInt(el.dataset.target);
     const suffix = el.dataset.suffix || '';
-    // Show real number immediately in case animation doesn't run
-    el.textContent = target + suffix;
+    // Always show real number first
+    el.textContent = target.toLocaleString() + suffix;
     // Then animate from 0
-    el.textContent = '0' + suffix;
-    animateCounter(el, target, suffix);
+    setTimeout(() => {
+      el.textContent = '0' + suffix;
+      animateCounter(el, target, suffix);
+    }, 100);
   });
 }
 
@@ -2839,6 +3171,8 @@ function loadPortal(student) {
   document.getElementById('profileHouse').textContent = student.house;
   // Init fees
   initFees(student.class, student.email || '', student.name, student.admNo);
+  // Check for new notices
+  setTimeout(checkNewNotices, 500);
 }
 
 function portalLogout() {
@@ -2999,11 +3333,13 @@ function renderPaymentHistory(){
     const isC=p.status==='confirmed', isP=p.status==='pending', isR=p.status==='rejected';
     const border=isC?'var(--success)':isP?'#ffc107':'var(--danger)';
     const badge=isC?'<span style="background:#d4edda;color:#155724;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">✅ Confirmed — Payment Settled</span>':isP?'<span style="background:#fff3cd;color:#856404;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">⏳ Awaiting Admin Confirmation</span>':'<span style="background:#f8d7da;color:#721c24;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">❌ Rejected — Contact School</span>';
+    const receiptBtn = isC ? `<button onclick='generateReceipt(${JSON.stringify(p)})' style="background:var(--navy);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.72rem;cursor:pointer;margin-top:6px;">📄 Download Receipt</button>` : '';
     return `<div style="background:var(--white);border-radius:var(--radius);padding:1rem 1.25rem;box-shadow:var(--shadow-sm);border-left:4px solid ${border};margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
         <div><div style="font-family:var(--font-head);font-weight:900;font-size:1.1rem;color:var(--navy);">₦${p.amount.toLocaleString()}</div>
         <div style="font-size:0.8rem;color:var(--gray-600);margin-top:2px;">${p.type} · ${p.method}</div>
-        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:2px;">${p.date} at ${p.time}</div></div>
+        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:2px;">${p.date} at ${p.time}</div>
+        ${receiptBtn}</div>
         <div style="text-align:right;">${badge}</div>
       </div>
       ${isP?`<div style="margin-top:0.75rem;font-size:0.78rem;color:#856404;background:#fff8e1;padding:6px 10px;border-radius:6px;">💡 Transfer ₦${p.amount.toLocaleString()} to Opay · 8150898386 and send proof to WhatsApp 08150898386</div>`:''}
@@ -3032,6 +3368,448 @@ async function loadFeePayments(){
 async function adminConfirmFee(payId,newStatus){
   if(!firebaseReady){ alert('Firebase not connected.'); return; }
   try{ await db.collection('fee_payments').doc(payId).update({status:newStatus}); alert(newStatus==='confirmed'?'✅ Payment confirmed!':'❌ Payment rejected.'); loadFeePayments(); }catch(e){ alert('Error: '+e.message); }
+}
+
+// ===== TESTIMONIALS =====
+async function submitTestimonial(e) {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('test_name').value,
+    role: document.getElementById('test_role').value,
+    message: document.getElementById('test_message').value,
+    rating: document.getElementById('test_rating').value,
+    phone: document.getElementById('test_phone').value,
+    status: 'pending',
+    timestamp: new Date().toISOString()
+  };
+  if (firebaseReady) { try { await db.collection('testimonials').add(data); } catch(e){} }
+  await sendEmail({ from_name: data.name, from_email: 'ferdew31@gmail.com', phone: data.phone || 'N/A', from_subject: `New Testimonial — ${data.role}`, message: `New testimonial from ${data.name} (${data.role}):\n\nRating: ${data.rating}/5\n\n"${data.message}"` });
+  document.getElementById('testSuccess').classList.add('show');
+  document.getElementById('testimonialForm').reset();
+}
+
+// ===== ALUMNI =====
+async function submitAlumni(e) {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('alm_name').value,
+    year: document.getElementById('alm_year').value,
+    phone: document.getElementById('alm_phone').value,
+    email: document.getElementById('alm_email').value,
+    job: document.getElementById('alm_job').value,
+    location: document.getElementById('alm_location').value,
+    message: document.getElementById('alm_message').value,
+    timestamp: new Date().toISOString()
+  };
+  if (firebaseReady) { try { await db.collection('alumni').add(data); } catch(e){} }
+  await sendEmail({ from_name: data.name, from_email: data.email, phone: data.phone, from_subject: `New Alumni Registration — Class of ${data.year}`, message: `New alumni registered:\n\nName: ${data.name}\nClass of: ${data.year}\nPhone: ${data.phone}\nEmail: ${data.email}\nOccupation: ${data.job}\nLocation: ${data.location}\nMessage: ${data.message}` });
+  document.getElementById('almSuccess').classList.add('show');
+  document.getElementById('alumniForm').reset();
+}
+
+// ===== FEE RECEIPT PDF GENERATOR =====
+function generateReceipt(payment) {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { alert('PDF library not loaded. Please try again.'); return; }
+  const doc = new jsPDF();
+  const pageW = doc.internal.pageSize.getWidth();
+
+  // Header
+  doc.setFillColor(7, 20, 48);
+  doc.rect(0, 0, pageW, 40, 'F');
+  doc.setTextColor(201, 150, 42);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FERDEW SECONDARY SCHOOL', pageW/2, 18, { align: 'center' });
+  doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Alakia, Ibadan, Oyo State | 08150898386 | ferdew31@gmail.com', pageW/2, 28, { align: 'center' });
+  doc.text('Excellence, Integrity, Progress', pageW/2, 36, { align: 'center' });
+
+  // Receipt title
+  doc.setTextColor(7, 20, 48);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('PAYMENT RECEIPT', pageW/2, 58, { align: 'center' });
+
+  // Divider
+  doc.setDrawColor(201, 150, 42);
+  doc.setLineWidth(1);
+  doc.line(20, 63, pageW - 20, 63);
+
+  // Receipt details
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(50, 50, 50);
+
+  const details = [
+    ['Receipt No:', 'FERDEW-' + Date.now().toString().slice(-8)],
+    ['Date:', payment.date || new Date().toLocaleDateString('en-NG')],
+    ['Student Name:', payment.studentName || feeState.studentName || '—'],
+    ['Admission No:', payment.admNo || feeState.admNo || '—'],
+    ['Term:', payment.term || 'First Term 2025/2026'],
+    ['Payment Type:', payment.type || '—'],
+    ['Payment Method:', payment.method || '—'],
+    ['Amount Paid:', '₦' + Number(payment.amount).toLocaleString()],
+    ['Status:', '✓ CONFIRMED'],
+    ['Reference:', payment.ref || payment.id || '—'],
+  ];
+
+  let y = 78;
+  details.forEach(([label, value]) => {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(7, 20, 48);
+    doc.text(label, 25, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(50, 50, 50);
+    doc.text(String(value), 90, y);
+    y += 12;
+  });
+
+  // Balance info
+  y += 5;
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.5);
+  doc.line(20, y, pageW - 20, y);
+  y += 12;
+
+  const total = feeState.totalFees || 0;
+  const confirmed = feeState.payments ? feeState.payments.filter(p=>p.status==='confirmed').reduce((s,p)=>s+p.amount,0) : 0;
+  const balance = Math.max(0, total - confirmed);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(7, 20, 48);
+  doc.text('Total Fees:', 25, y); doc.text('₦' + total.toLocaleString(), 90, y); y += 12;
+  doc.text('Total Paid:', 25, y); doc.setTextColor(27, 122, 62); doc.text('₦' + confirmed.toLocaleString(), 90, y); y += 12;
+  doc.setTextColor(balance > 0 ? 192 : 27, balance > 0 ? 57 : 122, balance > 0 ? 43 : 62);
+  doc.text('Balance:', 25, y); doc.text('₦' + balance.toLocaleString(), 90, y);
+
+  // Footer
+  const footerY = doc.internal.pageSize.getHeight() - 30;
+  doc.setFillColor(7, 20, 48);
+  doc.rect(0, footerY, pageW, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('This is a computer-generated receipt. No signature required.', pageW/2, footerY + 10, { align: 'center' });
+  doc.text('FERDEW Secondary School — Alakia, Ibadan, Oyo State, Nigeria', pageW/2, footerY + 20, { align: 'center' });
+
+  doc.save(`FERDEW_Receipt_${payment.admNo || 'student'}_${Date.now()}.pdf`);
+}
+
+// ===== REPORT CARD GENERATOR =====
+function generateReportCard() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { alert('PDF library not loaded.'); return; }
+  const doc = new jsPDF();
+  const pageW = doc.internal.pageSize.getWidth();
+
+  // Header
+  doc.setFillColor(7, 20, 48);
+  doc.rect(0, 0, pageW, 45, 'F');
+  doc.setTextColor(201, 150, 42);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FERDEW SECONDARY SCHOOL', pageW/2, 16, { align: 'center' });
+  doc.setFontSize(9);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Alakia, Ibadan, Oyo State | Excellence, Integrity, Progress', pageW/2, 25, { align: 'center' });
+  doc.setFontSize(13);
+  doc.setTextColor(201, 150, 42);
+  doc.text('STUDENT REPORT CARD — FIRST TERM 2024/2025', pageW/2, 38, { align: 'center' });
+
+  // Student info box
+  doc.setFillColor(241, 243, 248);
+  doc.rect(15, 50, pageW - 30, 28, 'F');
+  doc.setTextColor(7, 20, 48);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  const name = document.getElementById('profileName')?.textContent || 'Student';
+  const cls = document.getElementById('profileClass')?.textContent || 'SSS 2';
+  const admNo = document.getElementById('profileAdmNo')?.textContent || 'FER/2025/001';
+  doc.text(`Name: ${name}`, 20, 62);
+  doc.text(`Class: ${cls}`, 20, 72);
+  doc.text(`Admission No: ${admNo}`, 100, 62);
+  doc.text(`Academic Year: 2024/2025`, 100, 72);
+
+  // Results table
+  const subjects = [
+    ['Mathematics', 36, 54, 90, 'A', 'Excellent'],
+    ['English Language', 33, 50, 83, 'A', 'Excellent'],
+    ['Biology', 30, 46, 76, 'B', 'Very Good'],
+    ['Chemistry', 28, 44, 72, 'B', 'Good'],
+    ['Physics', 32, 48, 80, 'A', 'Excellent'],
+    ['Economics', 35, 52, 87, 'A', 'Excellent'],
+    ['Government', 27, 40, 67, 'C', 'Good'],
+    ['Civic Education', 34, 51, 85, 'A', 'Excellent'],
+  ];
+
+  let y = 88;
+  // Table header
+  doc.setFillColor(7, 20, 48);
+  doc.rect(15, y, pageW - 30, 10, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.text('Subject', 20, y + 7);
+  doc.text('CA (40)', 80, y + 7);
+  doc.text('Exam (60)', 105, y + 7);
+  doc.text('Total', 135, y + 7);
+  doc.text('Grade', 158, y + 7);
+  doc.text('Remark', 175, y + 7);
+  y += 10;
+
+  subjects.forEach((s, i) => {
+    doc.setFillColor(i % 2 === 0 ? 255 : 248, i % 2 === 0 ? 255 : 249, i % 2 === 0 ? 255 : 252);
+    doc.rect(15, y, pageW - 30, 9, 'F');
+    doc.setTextColor(50, 50, 50);
+    doc.text(s[0], 20, y + 6);
+    doc.text(String(s[1]), 83, y + 6);
+    doc.text(String(s[2]), 110, y + 6);
+    const gradeColor = s[4] === 'A' ? [27, 122, 62] : s[4] === 'B' ? [26, 109, 189] : [133, 100, 4];
+    doc.setTextColor(...gradeColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text(String(s[3]), 136, y + 6);
+    doc.text(s[4], 160, y + 6);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont('helvetica', 'normal');
+    doc.text(s[5], 175, y + 6);
+    y += 9;
+  });
+
+  // Summary
+  y += 8;
+  doc.setFillColor(241, 243, 248);
+  doc.rect(15, y, pageW - 30, 28, 'F');
+  doc.setTextColor(7, 20, 48);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('Average Score: 80.0%', 20, y + 10);
+  doc.text('Overall Grade: A', 20, y + 20);
+  doc.text('Class Position: 3rd', 100, y + 10);
+  doc.text('Class Size: 35 Students', 100, y + 20);
+
+  // Footer
+  const footerY = doc.internal.pageSize.getHeight() - 25;
+  doc.setFillColor(7, 20, 48);
+  doc.rect(0, footerY, pageW, 25, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Principal\'s Signature: _____________________', 20, footerY + 10);
+  doc.text("Next Term Begins: 13th January 2026", 20, footerY + 18);
+  doc.text('FERDEW Secondary School — Alakia, Ibadan', pageW/2, footerY + 14, { align: 'center' });
+
+  doc.save(`FERDEW_ReportCard_${name.replace(' ','_')}.pdf`);
+}
+
+// ===== PROSPECTUS PDF GENERATOR =====
+function generateProspectus() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { alert('PDF library not loaded.'); return; }
+  const doc = new jsPDF();
+  const pageW = doc.internal.pageSize.getWidth();
+
+  // Cover page
+  doc.setFillColor(7, 20, 48);
+  doc.rect(0, 0, pageW, doc.internal.pageSize.getHeight(), 'F');
+  doc.setTextColor(201, 150, 42);
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FERDEW', pageW/2, 80, { align: 'center' });
+  doc.setFontSize(16);
+  doc.text('SECONDARY SCHOOL', pageW/2, 96, { align: 'center' });
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(12);
+  doc.text('Excellence, Integrity, Progress', pageW/2, 112, { align: 'center' });
+  doc.setFontSize(10);
+  doc.text('Alakia, Ibadan, Oyo State, Nigeria', pageW/2, 130, { align: 'center' });
+  doc.text('Tel: 08150898386 | Email: ferdew31@gmail.com', pageW/2, 142, { align: 'center' });
+  doc.setTextColor(201, 150, 42);
+  doc.setFontSize(14);
+  doc.text('SCHOOL PROSPECTUS 2025/2026', pageW/2, 175, { align: 'center' });
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.text('Day & Boarding School | JSS1 – SSS3', pageW/2, 190, { align: 'center' });
+
+  // Page 2
+  doc.addPage();
+  doc.setFillColor(7, 20, 48);
+  doc.rect(0, 0, pageW, 20, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FERDEW SECONDARY SCHOOL — PROSPECTUS 2025/2026', pageW/2, 14, { align: 'center' });
+
+  let y = 35;
+  doc.setTextColor(7, 20, 48);
+  const sections = [
+    ['ABOUT US', 'FERDEW Secondary School was established in Alakia, Ibadan with a vision to provide world-class secondary education. We offer JSS1–SSS3 for both Day and Boarding students.'],
+    ['OUR VISION', 'To be the leading secondary school in South-West Nigeria, producing graduates who are academically excellent, morally upright, and globally competitive.'],
+    ['ADMISSION REQUIREMENTS', 'JSS1: Primary School Leaving Certificate, age 10-13 years, pass entrance exam.\nSSS1: BECE/JSS3 result, minimum 5 distinctions, age 14-17 years, pass entrance exam.'],
+    ['SCHOOL FEES (PER TERM)', 'JSS1-JSS3: ₦350,000 | SSS1-SSS3 Arts/Commercial: ₦400,000 | SSS Science: ₦430,000\nBoarding: JSS ₦85,000/term | SSS ₦95,000/term (separate from school fees)'],
+    ['SUBJECTS OFFERED', 'Core: English, Mathematics, Biology, Chemistry, Physics, Civic Education.\nElectives: Economics, Government, Literature, Further Maths, Computer Science, Accounting, Commerce, Geography, Agricultural Science, Fine Arts.'],
+    ['EXAMINATION RESULTS', 'WAEC Pass Rate: 92% | NECO Pass Rate: 91% | Average JAMB Score: 250+\nWe prepare every SS3 student thoroughly for all external examinations.'],
+    ['CONTACT US', 'Address: Alakia, Ibadan, Oyo State, Nigeria\nPhone/WhatsApp: 08150898386\nEmail: ferdew31@gmail.com'],
+  ];
+
+  sections.forEach(([title, content]) => {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(7, 20, 48);
+    doc.text(title, 20, y); y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 80);
+    const lines = doc.splitTextToSize(content, pageW - 40);
+    doc.text(lines, 20, y);
+    y += lines.length * 6 + 10;
+    doc.setDrawColor(201, 150, 42);
+    doc.line(20, y - 4, pageW - 20, y - 4);
+  });
+
+  doc.save('FERDEW_School_Prospectus_2025.pdf');
+}
+
+// ===== AUTO ADMISSION NUMBER GENERATOR =====
+async function generateAdmissionNumber(classType) {
+  const year = new Date().getFullYear();
+  const prefix = classType && classType.includes('SSS') ? 'FSS' : 'FJR';
+  if (firebaseReady) {
+    try {
+      const snap = await db.collection('admissions').where('year', '==', year).get();
+      const count = snap.size + 1;
+      return `FER/${year}/${String(count).padStart(3, '0')}`;
+    } catch(e) {}
+  }
+  return `FER/${year}/${Math.floor(Math.random() * 900) + 100}`;
+}
+
+// ===== WHATSAPP BULK MESSAGE GENERATOR =====
+function openBulkWhatsApp() {
+  const msg = document.getElementById('bulkMsg')?.value;
+  if (!msg) { alert('Please enter a message first.'); return; }
+  const encoded = encodeURIComponent(msg);
+  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+}
+
+// ===== ATTENDANCE TRACKER =====
+let attendanceData = {};
+function markAttendance(studentId, status) {
+  const today = new Date().toISOString().split('T')[0];
+  if (!attendanceData[today]) attendanceData[today] = {};
+  attendanceData[today][studentId] = status;
+  if (firebaseReady) {
+    try { db.collection('attendance').doc(today).set(attendanceData[today], { merge: true }); } catch(e) {}
+  }
+  const btn = document.getElementById(`att_${studentId}`);
+  if (btn) btn.style.background = status === 'present' ? 'var(--success)' : 'var(--danger)';
+}
+
+// ===== STAFF MANAGEMENT =====
+async function addStaff() {
+  const name = document.getElementById('staff_name')?.value;
+  const subject = document.getElementById('staff_subject')?.value;
+  const phone = document.getElementById('staff_phone')?.value;
+  const role = document.getElementById('staff_role')?.value;
+  if (!name || !subject) { alert('Please fill name and subject.'); return; }
+  const data = { name, subject, phone, role, createdAt: new Date().toISOString() };
+  if (firebaseReady) { try { await db.collection('staff').add(data); } catch(e) {} }
+  document.getElementById('staffSuccess').classList.add('show');
+  loadStaffList();
+}
+
+async function loadStaffList() {
+  if (!firebaseReady) return;
+  try {
+    const snap = await db.collection('staff').get();
+    const list = document.getElementById('staffList');
+    if (!list) return;
+    if (snap.empty) { list.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--gray-400);padding:1rem;">No staff added yet.</td></tr>'; return; }
+    list.innerHTML = snap.docs.map(d => {
+      const s = d.data();
+      return `<tr><td><strong>${s.name}</strong></td><td>${s.role||'Teacher'}</td><td>${s.subject}</td><td>${s.phone||'—'}</td></tr>`;
+    }).join('');
+  } catch(e) {}
+}
+
+function setTemplate(type) {
+  const templates = {
+    fees: `Dear Parent/Guardian,\n\nThis is a reminder from FERDEW Secondary School that school fees for the current term are due.\n\nFees: JSS ₦350,000 | SSS Arts/Commercial ₦400,000 | SSS Science ₦430,000\n\nPlease pay before the deadline to avoid disruption to your child's education.\n\nPayment: Opay — 8150898386 (Oladeji Opeyemi Ridwan)\n\nThank you.\nFERDEW Secondary School\n📞 08150898386`,
+    exam: `Dear Parent/Guardian,\n\nPlease note that examinations begin soon at FERDEW Secondary School.\n\nKindly ensure your child:\n• Reports to school on time\n• Brings all required stationery\n• Has paid their exam fees\n• Has their exam timetable\n\nFor enquiries, call: 08150898386\n\nFERDEW Secondary School`,
+    event: `Dear Parent/Guardian,\n\nYou are cordially invited to an upcoming school event at FERDEW Secondary School.\n\nPlease check the school notice board or contact us for details.\n\n📞 08150898386\n✉️ ferdew31@gmail.com\n\nWe look forward to seeing you!\nFERDEW Secondary School`,
+    resume: `Dear Parent/Guardian,\n\nThis is to inform you that the new term begins soon at FERDEW Secondary School.\n\n• Day students: Resume on the first day of term by 8:00 AM\n• Boarding students: Resume a day earlier by 4:00 PM\n\nEnsure all fees are paid before resumption.\n\nFor enquiries: 08150898386\nFERDEW Secondary School`
+  };
+  const el = document.getElementById('bulkMsg');
+  if (el) el.value = templates[type] || '';
+}
+
+function loadAttendanceClass() {
+  const cls = document.getElementById('attClass')?.value;
+  if (!cls) return;
+  document.getElementById('attDate').textContent = new Date().toLocaleDateString('en-NG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  // Demo student list
+  const students = ['Adewale Ogundimu','Chiamaka Nwosu','Tunde Adeleke','Emeka Obi','Fatima Ibrahim','Seun Bakare','Amaka Okonkwo','David Okonkwo','Yetunde Balogun','Blessing Adeyemi'];
+  const grid = document.getElementById('attendanceGrid');
+  if (!grid) return;
+  grid.innerHTML = students.map((s, i) => `
+    <div style="background:var(--white);border-radius:var(--radius);padding:0.75rem 1rem;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div style="font-size:0.875rem;font-weight:600;">${s}</div>
+      <div style="display:flex;gap:6px;">
+        <button id="att_p_${i}" onclick="markAttendance('p_${i}','present');toggleAtt(${i},'present')" style="background:var(--success);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">✓ Present</button>
+        <button id="att_a_${i}" onclick="markAttendance('a_${i}','absent');toggleAtt(${i},'absent')" style="background:var(--gray-200);color:var(--gray-600);border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">✗ Absent</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleAtt(i, status) {
+  const pBtn = document.getElementById(`att_p_${i}`);
+  const aBtn = document.getElementById(`att_a_${i}`);
+  if (status === 'present') {
+    if(pBtn){ pBtn.style.background='var(--success)'; pBtn.style.color='white'; }
+    if(aBtn){ aBtn.style.background='var(--gray-200)'; aBtn.style.color='var(--gray-600)'; }
+  } else {
+    if(pBtn){ pBtn.style.background='var(--gray-200)'; pBtn.style.color='var(--gray-600)'; }
+    if(aBtn){ aBtn.style.background='var(--danger)'; aBtn.style.color='white'; }
+  }
+}
+
+function saveAttendance() {
+  const cls = document.getElementById('attClass')?.value;
+  if (!cls) { alert('Please select a class first.'); return; }
+  const today = new Date().toISOString().split('T')[0];
+  if (firebaseReady) { try { db.collection('attendance').doc(`${today}_${cls}`).set({ class: cls, date: today, data: attendanceData, savedAt: new Date().toISOString() }); } catch(e){} }
+  document.getElementById('attSuccess').classList.add('show');
+  setTimeout(() => document.getElementById('attSuccess').classList.remove('show'), 3000);
+}
+function checkNewNotices() {
+  const lastSeen = localStorage.getItem('lastNoticeSeen') || '0';
+  const notices = document.querySelectorAll('.notice-item');
+  if (notices.length > parseInt(lastSeen)) {
+    const badge = document.getElementById('noticeBadge');
+    if (badge) { badge.style.display = 'inline-flex'; badge.textContent = notices.length - parseInt(lastSeen) + ' new'; }
+  }
+}
+function markNoticesSeen() {
+  const notices = document.querySelectorAll('.notice-item');
+  localStorage.setItem('lastNoticeSeen', notices.length);
+  const badge = document.getElementById('noticeBadge');
+  if (badge) badge.style.display = 'none';
+}
+
+// ===== PWA SERVICE WORKER =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // Register inline service worker
+    const swContent = `
+      const CACHE = 'ferdew-v1';
+      const ASSETS = ['/'];
+      self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))));
+      self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+    `;
+    const blob = new Blob([swContent], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  });
 }
 
 // ===== INIT =====
