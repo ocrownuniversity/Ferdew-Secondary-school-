@@ -266,7 +266,7 @@ textarea { resize: vertical; min-height: 100px; }
 .news-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
 .news-card { background: var(--white); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); transition: var(--transition); }
 .news-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
-.news-img { height: 180px; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+.news-img { height: 180px; display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; }
 .news-img.blue { background: linear-gradient(135deg,var(--navy),var(--navy-light)); }
 .news-img.gold { background: linear-gradient(135deg,var(--gold),var(--gold-light)); }
 .news-img.green { background: linear-gradient(135deg,#1B7A3E,#2EA853); }
@@ -288,8 +288,8 @@ textarea { resize: vertical; min-height: 100px; }
 /* ===== GALLERY ===== */
 .gallery-grid { columns: 3; gap: 16px; }
 .gallery-item { break-inside: avoid; margin-bottom: 16px; border-radius: var(--radius); overflow: hidden; cursor: pointer; position: relative; }
-.gallery-item .placeholder { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; transition: transform 0.4s ease; }
-.gallery-item:hover .placeholder { transform: scale(1.05); }
+.gallery-item img { width: 100%; display: block; transition: transform 0.4s ease; }
+.gallery-item:hover img { transform: scale(1.05); }
 .gallery-item:nth-child(3n+1) .placeholder { height: 240px; }
 .gallery-item .overlay { position: absolute; inset: 0; background: rgba(7,20,48,0.6); display: flex; align-items: center; justify-content: center; opacity: 0; transition: var(--transition); }
 .gallery-item:hover .overlay { opacity: 1; }
@@ -596,19 +596,19 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
   <div class="stats-section">
     <div class="stats-grid">
       <div class="stat-item">
-        <div class="stat-number" data-target="800">0</div>
+        <div class="stat-number" data-target="800">800</div>
         <div class="stat-label">Students Enrolled</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number" data-target="45">0</div>
+        <div class="stat-number" data-target="52">52</div>
         <div class="stat-label">Qualified Staff</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number" data-target="15">0</div>
+        <div class="stat-number" data-target="15">15</div>
         <div class="stat-label">Years of Excellence</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number" data-target="94" data-suffix="%">0</div>
+        <div class="stat-number" data-target="92" data-suffix="%">92%</div>
         <div class="stat-label">WAEC Pass Rate</div>
       </div>
     </div>
@@ -694,7 +694,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
     </div>
     <div class="news-grid fade-in">
       <div class="news-card">
-        <div class="news-img blue">🏆</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="Quiz Competition"></div>
         <div class="news-body">
           <div class="news-date">March 2025</div>
           <h3>FERDEW Wins State Quiz Competition</h3>
@@ -702,7 +702,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
       <div class="news-card">
-        <div class="news-img gold">📝</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="Admissions"></div>
         <div class="news-body">
           <div class="news-date">April 2025</div>
           <h3>2025/2026 Admission Now Open</h3>
@@ -710,7 +710,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
       <div class="news-card">
-        <div class="news-img green">🎭</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="Cultural Day"></div>
         <div class="news-body">
           <div class="news-date">May 2025</div>
           <h3>Annual Cultural Day Celebration</h3>
@@ -813,7 +813,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           </div>
           <div class="timeline-item">
             <div class="timeline-year">2025</div>
-            <div class="timeline-title">800+ Students, 94% WAEC Pass Rate</div>
+            <div class="timeline-title">800+ Students, 92% WAEC Pass Rate</div>
             <div class="timeline-text">Today, FERDEW stands tall as one of the top-performing schools in Ibadan, continuing to set the standard for excellence.</div>
           </div>
         </div>
@@ -894,7 +894,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
       <div class="principal-info">
         <h3>The Principal</h3>
         <div class="role">Principal — FERDEW Secondary School</div>
-        <p>With over two decades of experience in secondary education, our Principal is a passionate educator dedicated to the holistic development of every student. Under their leadership, FERDEW has achieved some of its greatest academic milestones, including a 94% WAEC pass rate and multiple inter-school competition victories. Our Principal believes that every child has the potential for greatness and ensures our school environment brings out the best in each one.</p>
+        <p>With over over 15 years of experience in secondary education, our Principal is a passionate educator dedicated to the holistic development of every student. Under their leadership, FERDEW has achieved some of its greatest academic milestones, including a 92% WAEC pass rate and multiple inter-school competition victories. Our Principal believes that every child has the potential for greatness and ensures our school environment brings out the best in each one.</p>
       </div>
     </div>
   </div>
@@ -1383,7 +1383,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
     <div class="exam-cards fade-in">
       <div class="exam-card">
         <h3>WAEC</h3>
-        <div class="pass">94%</div>
+        <div class="pass">92%</div>
         <p>Pass rate in the 2024 WAEC examinations. We offer intensive WAEC prep from SS2, including weekly mock tests and individual coaching.</p>
       </div>
       <div class="exam-card">
@@ -1423,7 +1423,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
     </div>
     <div class="news-grid fade-in">
       <div class="news-card">
-        <div class="news-img blue">🏆</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="Quiz Championship"></div>
         <div class="news-body">
           <div class="news-date">March 15, 2025</div>
           <h3>FERDEW Wins Oyo State Quiz Championship</h3>
@@ -1431,7 +1431,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
       <div class="news-card">
-        <div class="news-img gold">📝</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="Admissions Open"></div>
         <div class="news-body">
           <div class="news-date">April 1, 2025</div>
           <h3>2025/2026 Admission Form Now Available</h3>
@@ -1439,7 +1439,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
       <div class="news-card">
-        <div class="news-img green">🎭</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="Cultural Day"></div>
         <div class="news-body">
           <div class="news-date">March 28, 2025</div>
           <h3>Annual Cultural Day Celebrated in Grand Style</h3>
@@ -1447,15 +1447,15 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
       <div class="news-card">
-        <div class="news-img blue">📊</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="WAEC Results"></div>
         <div class="news-body">
           <div class="news-date">February 10, 2025</div>
-          <h3>2024 WAEC Results: 94% Passes</h3>
-          <p>We are proud to announce our best WAEC result yet — 94% of our SS3 candidates passed with at least 5 credits including English and Mathematics. Well done!</p>
+          <h3>2024 WAEC Results: 92% Passes</h3>
+          <p>We are proud to announce our best WAEC result yet — 92% of our SS3 candidates passed with at least 5 credits including English and Mathematics. Well done!</p>
         </div>
       </div>
       <div class="news-card">
-        <div class="news-img gold">⚽</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="Football"></div>
         <div class="news-body">
           <div class="news-date">January 20, 2025</div>
           <h3>Football Team Advances to State Finals</h3>
@@ -1463,7 +1463,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
       </div>
       <div class="news-card">
-        <div class="news-img green">💻</div>
+        <div class="news-img" style="overflow:hidden;padding:0;"><img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=180&fit=crop&q=80" style="width:100%;height:180px;object-fit:cover;" alt="Computer Lab"></div>
         <div class="news-body">
           <div class="news-date">January 5, 2025</div>
           <h3>New Computer Lab Commissioned</h3>
@@ -1526,18 +1526,18 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
 
   <div class="section-wrap">
     <div class="gallery-grid fade-in">
-      <div class="gallery-item"><div class="placeholder g-blue">🎓</div><div class="overlay"><span>Graduation Day</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-gold">⚽</div><div class="overlay"><span>Sports Day</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-teal">🔬</div><div class="overlay"><span>Science Lab</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-green">📚</div><div class="overlay"><span>Library</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-navy">🎭</div><div class="overlay"><span>Drama Club</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-purple">🎵</div><div class="overlay"><span>Music Society</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-red">🏆</div><div class="overlay"><span>Awards Ceremony</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-gold">🍽️</div><div class="overlay"><span>Dining Hall</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-teal">💻</div><div class="overlay"><span>Computer Lab</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-blue">🎊</div><div class="overlay"><span>Cultural Day</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-green">🏃</div><div class="overlay"><span>Athletics</span></div></div>
-      <div class="gallery-item"><div class="placeholder g-navy">🛏️</div><div class="overlay"><span>Boarding House</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=240&fit=crop&q=80" style="width:100%;height:240px;object-fit:cover;display:block;" alt="Graduation Day"><div class="overlay"><span>Graduation Day</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&h=200&fit=crop&q=80" style="width:100%;height:200px;object-fit:cover;display:block;" alt="Sports Day"><div class="overlay"><span>Sports Day</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=200&fit=crop&q=80" style="width:100%;height:200px;object-fit:cover;display:block;" alt="Science Lab"><div class="overlay"><span>Science Lab</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=240&fit=crop&q=80" style="width:100%;height:240px;object-fit:cover;display:block;" alt="Library"><div class="overlay"><span>Library</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400&h=200&fit=crop&q=80" style="width:100%;height:200px;object-fit:cover;display:block;" alt="Drama Club"><div class="overlay"><span>Drama Club</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=200&fit=crop&q=80" style="width:100%;height:200px;object-fit:cover;display:block;" alt="Music Society"><div class="overlay"><span>Music Society</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=240&fit=crop&q=80" style="width:100%;height:240px;object-fit:cover;display:block;" alt="Awards Ceremony"><div class="overlay"><span>Awards Ceremony</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1567521464027-f127ff144326?w=400&h=200&fit=crop&q=80" style="width:100%;height:200px;object-fit:cover;display:block;" alt="Dining Hall"><div class="overlay"><span>Dining Hall</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&h=200&fit=crop&q=80" style="width:100%;height:200px;object-fit:cover;display:block;" alt="Computer Lab"><div class="overlay"><span>Computer Lab</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=240&fit=crop&q=80" style="width:100%;height:240px;object-fit:cover;display:block;" alt="Cultural Day"><div class="overlay"><span>Cultural Day</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=200&fit=crop&q=80" style="width:100%;height:200px;object-fit:cover;display:block;" alt="Athletics"><div class="overlay"><span>Athletics</span></div></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&h=200&fit=crop&q=80" style="width:100%;height:200px;object-fit:cover;display:block;" alt="Boarding House"><div class="overlay"><span>Boarding House</span></div></div>
     </div>
     <div style="text-align:center;margin-top:2rem;padding:1.5rem;background:var(--gold-pale);border-radius:var(--radius);max-width:500px;margin-left:auto;margin-right:auto;">
       <p style="font-size:0.875rem;color:var(--gray-600);">📸 Our full photo gallery is updated regularly. Follow us on WhatsApp for the latest photos and school updates.</p>
@@ -1736,8 +1736,8 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         <div class="dash-cards">
           <div class="dash-card"><div class="num" id="dc-apps">0</div><div class="lbl">Applications</div></div>
           <div class="dash-card"><div class="num">800</div><div class="lbl">Students</div></div>
-          <div class="dash-card"><div class="num">45</div><div class="lbl">Staff Members</div></div>
-          <div class="dash-card"><div class="num">94%</div><div class="lbl">WAEC Pass Rate</div></div>
+          <div class="dash-card"><div class="num">52</div><div class="lbl">Staff Members</div></div>
+          <div class="dash-card"><div class="num">92%</div><div class="lbl">WAEC Pass Rate</div></div>
         </div>
         <div class="dash-table-wrap">
           <h3>Recent Applications</h3>
@@ -2361,13 +2361,16 @@ function animateCounter(el, target, suffix='') {
   const timer = setInterval(() => {
     current = Math.min(current + increment, target);
     el.textContent = Math.floor(current) + suffix;
-    if (current >= target) clearInterval(timer);
+    if (current >= target) { el.textContent = target + suffix; clearInterval(timer); }
   }, duration / steps);
 }
 function initStats() {
   document.querySelectorAll('.stat-number[data-target]').forEach(el => {
     const target = parseInt(el.dataset.target);
     const suffix = el.dataset.suffix || '';
+    // Show real number immediately in case animation doesn't run
+    el.textContent = target + suffix;
+    // Then animate from 0
     el.textContent = '0' + suffix;
     animateCounter(el, target, suffix);
   });
