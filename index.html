@@ -12,6 +12,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+  window.addEventListener('load', function() {
+    emailjs.init('YLTc4P57NNq2WrTG3');
+  });
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -2292,16 +2298,28 @@ try {
 }
 
 // ===== EMAILJS CONFIG =====
-// TODO: Replace with your actual EmailJS credentials
 const EMAILJS_SERVICE_ID = 'service_teghd5a';
 const EMAILJS_TEMPLATE_ID = 'template_q4a38sb';
 const EMAILJS_PUBLIC_KEY = 'YLTc4P57NNq2WrTG3';
 
-// Load EmailJS
-const ejsScript = document.createElement('script');
-ejsScript.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
-ejsScript.onload = () => { try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e){} };
-document.head.appendChild(ejsScript);
+// Safe EmailJS send — waits for library to be ready
+async function sendEmail(params) {
+  return new Promise((resolve) => {
+    const attempt = (tries) => {
+      if (typeof emailjs !== 'undefined' && emailjs.send) {
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
+          .then(() => { console.log('Email sent ✅'); resolve(true); })
+          .catch(err => { console.error('EmailJS error:', err); resolve(false); });
+      } else if (tries > 0) {
+        setTimeout(() => attempt(tries - 1), 500);
+      } else {
+        console.warn('EmailJS not available');
+        resolve(false);
+      }
+    };
+    attempt(10); // try up to 10 times (5 seconds total)
+  });
+}
 
 // ===== PAGE NAVIGATION =====
 function showPage(page) {
@@ -2422,15 +2440,13 @@ async function submitAdmission(e) {
   }
 
   // Send email via EmailJS
-  try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      from_name: `${data.firstName} ${data.lastName}`,
-      from_email: data.email,
-      phone: data.phone,
-      subject: `New Admission Application — ${data.class} (${data.type})`,
-      message: `New admission application received:\n\nStudent: ${data.firstName} ${data.lastName}\nDOB: ${data.dob}\nGender: ${data.gender}\nClass: ${data.class}\nType: ${data.type}\nParent: ${data.parent}\nPhone: ${data.phone}\nAddress: ${data.address}\nPrevious School: ${data.school}\nExtra Info: ${data.info || 'None'}\nPayment Method: ${data.paymentMethod}`
-    });
-  } catch(err) { console.log('EmailJS:', err); }
+  await sendEmail({
+    from_name: `${data.firstName} ${data.lastName}`,
+    from_email: data.email,
+    phone: data.phone,
+    subject: `New Admission Application — ${data.class} (${data.type})`,
+    message: `New admission application received:\n\nStudent: ${data.firstName} ${data.lastName}\nDOB: ${data.dob}\nGender: ${data.gender}\nClass: ${data.class}\nType: ${data.type}\nParent: ${data.parent}\nPhone: ${data.phone}\nAddress: ${data.address}\nPrevious School: ${data.school}\nExtra Info: ${data.info || 'None'}\nPayment Method: ${data.paymentMethod}`
+  });
 
   btn.textContent = originalText; btn.disabled = false;
 
@@ -2500,15 +2516,13 @@ async function submitBoarding(e) {
     try { await db.collection('boarding').add(data); } catch(err) { console.log('Firestore:', err.message); }
   }
 
-  try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      from_name: data.name,
-      from_email: 'ferdew31@gmail.com',
-      phone: data.phone,
-      subject: `New Boarding Application — ${data.name}`,
-      message: `New boarding application:\n\nStudent: ${data.name}\nAdmission No: ${data.admNo || 'New Student'}\nClass: ${data.class}\nGender: ${data.gender}\nParent: ${data.parent}\nPhone: ${data.phone}\nEmergency Contact: ${data.emergency || 'None'}\nMedical Info: ${data.medical || 'None'}`
-    });
-  } catch(err) { console.log('EmailJS:', err); }
+  await sendEmail({
+    from_name: data.name,
+    from_email: 'ferdew31@gmail.com',
+    phone: data.phone,
+    subject: `New Boarding Application — ${data.name}`,
+    message: `New boarding application:\n\nStudent: ${data.name}\nAdmission No: ${data.admNo || 'New Student'}\nClass: ${data.class}\nGender: ${data.gender}\nParent: ${data.parent}\nPhone: ${data.phone}\nEmergency Contact: ${data.emergency || 'None'}\nMedical Info: ${data.medical || 'None'}`
+  });
 
   btn.textContent = 'Submit Boarding Application'; btn.disabled = false;
   document.getElementById('brdSuccess').classList.add('show');
@@ -2534,15 +2548,13 @@ async function submitContact(e) {
     try { await db.collection('contact').add(data); } catch(err) { console.log('Firestore:', err.message); }
   }
 
-  try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      from_name: data.name,
-      from_email: data.email,
-      phone: data.phone,
-      subject: data.subject,
-      message: data.message
-    });
-  } catch(err) { console.log('EmailJS:', err); }
+  await sendEmail({
+    from_name: data.name,
+    from_email: data.email,
+    phone: data.phone,
+    subject: data.subject,
+    message: data.message
+  });
 
   btn.textContent = 'Send Message →'; btn.disabled = false;
   document.getElementById('ctSuccess').classList.add('show');
