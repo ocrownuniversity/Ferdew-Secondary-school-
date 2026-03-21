@@ -1667,6 +1667,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         <select onchange="switchDashMobile(this.value)" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);padding:6px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;display:none;" id="dashMobileSelect">
           <option value="overview">📊 Overview</option>
           <option value="applications">📋 Applications</option>
+          <option value="payments">💳 Payments</option>
           <option value="boarding">🏠 Boarding</option>
           <option value="news">📰 News</option>
           <option value="gallery">🖼️ Gallery</option>
@@ -1685,6 +1686,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
       <div class="dash-nav">
         <div class="dash-nav-item active" onclick="switchDash('overview')"><span class="icon">📊</span> Overview</div>
         <div class="dash-nav-item" onclick="switchDash('applications')"><span class="icon">📋</span> Applications</div>
+        <div class="dash-nav-item" onclick="switchDash('payments')"><span class="icon">💳</span> Payments</div>
         <div class="dash-nav-item" onclick="switchDash('boarding')"><span class="icon">🏠</span> Boarding</div>
         <div class="dash-nav-item" onclick="switchDash('news')"><span class="icon">📰</span> News Posts</div>
         <div class="dash-nav-item" onclick="switchDash('gallery')"><span class="icon">🖼️</span> Gallery</div>
@@ -1732,6 +1734,64 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
             <thead><tr><th>Name</th><th>Class</th><th>Type</th><th>Parent Phone</th><th>Email</th><th>Status</th><th>Action</th></tr></thead>
             <tbody id="allAppsTable"><tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:2rem;">No applications in Firestore yet.</td></tr></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div class="dash-section" id="dash-payments">
+        <div class="dash-header"><h2>All Student Payments</h2></div>
+        <!-- Summary Cards -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:1.5rem;">
+          <div class="dash-card">
+            <div class="num" id="adminTotalCollected">₦0</div>
+            <div class="lbl">Total Collected</div>
+          </div>
+          <div class="dash-card">
+            <div class="num" id="adminPaymentCount">0</div>
+            <div class="lbl">Total Transactions</div>
+          </div>
+          <div class="dash-card">
+            <div class="num" id="adminPendingCount">0</div>
+            <div class="lbl">Pending Verification</div>
+          </div>
+        </div>
+        <!-- Filters -->
+        <div class="dash-table-wrap">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1rem;">
+            <input type="text" placeholder="🔍 Search by name or admission no..." style="max-width:240px;padding:8px 12px;font-size:0.875rem;border:1.5px solid var(--gray-200);border-radius:8px;" oninput="filterPayments(this.value)">
+            <select style="padding:8px 12px;font-size:0.875rem;border:1.5px solid var(--gray-200);border-radius:8px;" onchange="filterPaymentsByTerm(this.value)">
+              <option value="">All Terms</option>
+              <option>First Term 2025/2026</option>
+              <option>Second Term 2025/2026</option>
+              <option>Third Term 2025/2026</option>
+            </select>
+            <select style="padding:8px 12px;font-size:0.875rem;border:1.5px solid var(--gray-200);border-radius:8px;" onchange="filterPaymentsByMethod(this.value)">
+              <option value="">All Methods</option>
+              <option>Paystack</option>
+              <option>Bank Transfer</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="dash-table" id="adminPaymentsTable">
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>Adm. No</th>
+                  <th>Class</th>
+                  <th>Term</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminPaymentsBody">
+                <tr><td colspan="10" style="text-align:center;color:var(--gray-400);padding:2rem;">No payment records yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -1863,15 +1923,17 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         <div class="portal-nav-item active" onclick="switchPortal('profile')">👤 My Profile</div>
         <div class="portal-nav-item" onclick="switchPortal('timetable')">📅 Timetable</div>
         <div class="portal-nav-item" onclick="switchPortal('results')">📊 Results</div>
+        <div class="portal-nav-item" onclick="switchPortal('fees')" style="color:var(--gold);font-weight:700;">💳 Pay Fees</div>
         <div class="portal-nav-item" onclick="switchPortal('notices')">📢 Notices</div>
       </div>
       <div class="portal-main">
         <!-- MOBILE NAV -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;" id="portalMobileNav">
-          <button onclick="switchPortal('profile')" class="btn btn-sm btn-navy">Profile</button>
-          <button onclick="switchPortal('timetable')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);">Timetable</button>
-          <button onclick="switchPortal('results')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);">Results</button>
-          <button onclick="switchPortal('notices')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);">Notices</button>
+          <button onclick="switchPortal('profile')" class="btn btn-sm btn-navy" id="mob-profile">Profile</button>
+          <button onclick="switchPortal('timetable')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-timetable">Timetable</button>
+          <button onclick="switchPortal('results')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-results">Results</button>
+          <button onclick="switchPortal('fees')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-fees">💳 Fees</button>
+          <button onclick="switchPortal('notices')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-notices">Notices</button>
         </div>
 
         <!-- PROFILE -->
@@ -1955,6 +2017,256 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
             <div style="background:var(--white);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow-sm);text-align:center;">
               <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:900;color:var(--gold);">3rd</div>
               <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.05em;">Class Position</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEES PAYMENT -->
+        <div class="portal-section" id="portal-fees">
+          <h2 style="font-size:1.3rem;margin-bottom:1.5rem;">💳 School Fees Payment</h2>
+
+          <!-- BALANCE TRACKER -->
+          <div style="background:var(--navy-dark);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;color:var(--white);">
+            <div style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-light);margin-bottom:1rem;">2025/2026 Academic Session — First Term</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:1.25rem;">
+              <div style="text-align:center;">
+                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:var(--white);" id="feeTotal">₦0</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">Total Fees</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:#4ade80;" id="feePaid">₦0</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">Amount Paid</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:var(--gold-light);" id="feeBalance">₦0</div>
+                <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">Balance</div>
+              </div>
+            </div>
+            <!-- Progress Bar -->
+            <div style="background:rgba(255,255,255,0.1);border-radius:100px;height:8px;overflow:hidden;">
+              <div id="feeProgressBar" style="height:100%;background:linear-gradient(90deg,var(--gold),#4ade80);border-radius:100px;width:0%;transition:width 0.8s ease;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+              <span style="font-size:0.72rem;color:rgba(255,255,255,0.4);" id="feeInstallmentInfo">0 of 3 installments used</span>
+              <span style="font-size:0.72rem;color:rgba(255,255,255,0.4);" id="feePercent">0% paid</span>
+            </div>
+          </div>
+
+          <!-- PAYMENT FORM -->
+          <div class="form-wrap" style="margin-bottom:1.5rem;" id="feePaymentForm">
+            <h3 class="form-title">Make Payment</h3>
+            <p class="form-subtitle" id="feePaySubtitle">Select amount and payment method below.</p>
+
+            <!-- INSTALLMENT WARNING -->
+            <div id="feeMaxWarning" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:0.875rem;color:#856404;">
+              ⚠️ You have used all 3 installments. You may make <strong>one final payment</strong> to clear your remaining balance.
+            </div>
+            <div id="feeClearedMsg" style="display:none;background:#d4edda;border:1px solid #c3e6cb;border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:0.875rem;color:#155724;">
+              ✅ <strong>Fees fully paid!</strong> You have no outstanding balance for this term.
+            </div>
+
+            <div class="form-grid" id="feeFormFields">
+              <div class="form-group full">
+                <label>Payment Type *</label>
+                <select id="feePayType" onchange="handleFeeTypeChange()">
+                  <option value="">Select payment type</option>
+                  <option value="full">Full Payment (Clear entire balance)</option>
+                  <option value="installment">Installment (Pay a specific amount)</option>
+                </select>
+              </div>
+              <div class="form-group full" id="feeAmountGroup" style="display:none;">
+                <label>Amount to Pay (₦) *</label>
+                <input type="number" id="feeAmount" placeholder="Enter amount e.g. 100000" min="1000" oninput="validateFeeAmount()">
+                <div style="font-size:0.78rem;color:var(--gray-400);margin-top:4px;" id="feeAmountHint"></div>
+              </div>
+              <div class="form-group full">
+                <label>Term *</label>
+                <select id="feeTerm">
+                  <option value="First Term 2025/2026">First Term 2025/2026</option>
+                  <option value="Second Term 2025/2026">Second Term 2025/2026</option>
+                  <option value="Third Term 2025/2026">Third Term 2025/2026</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- PAYMENT METHOD -->
+            <div style="margin-top:1rem;" id="feeMethodSection" style="display:none;">
+              <div style="font-weight:700;color:var(--navy);font-size:0.9rem;margin-bottom:0.75rem;">Choose Payment Method:</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;" id="feeBankOption" onclick="selectFeePayment('bank')">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.5rem;">
+                    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-400);" id="feeBankRadio"></div>
+                    <span style="font-weight:700;font-size:0.875rem;">🏦 Bank Transfer</span>
+                  </div>
+                  <div style="font-size:0.78rem;color:var(--gray-600);line-height:1.7;">
+                    <div><strong>Bank:</strong> Opay</div>
+                    <div><strong>Acc No:</strong> 8150898386</div>
+                    <div><strong>Name:</strong> Oladeji Opeyemi Ridwan</div>
+                  </div>
+                  <div style="font-size:0.72rem;color:var(--gray-400);margin-top:0.5rem;">Send proof to WhatsApp: 08150898386</div>
+                </div>
+                <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;" id="feePaystackOption" onclick="selectFeePayment('paystack')">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.5rem;">
+                    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-400);" id="feePaystackRadio"></div>
+                    <span style="font-weight:700;font-size:0.875rem;">💳 Paystack</span>
+                  </div>
+                  <div style="font-size:0.78rem;color:var(--gray-600);line-height:1.7;">
+                    <div>✅ Debit/Credit Card</div>
+                    <div>✅ Bank Transfer</div>
+                    <div>✅ USSD</div>
+                  </div>
+                  <div style="font-size:0.72rem;color:var(--gray-400);margin-top:0.5rem;">Instant confirmation</div>
+                </div>
+              </div>
+              <div style="font-size:0.8rem;color:var(--danger);display:none;margin-top:0.5rem;" id="feeMethodErr">⚠️ Please select a payment method.</div>
+            </div>
+
+            <div style="margin-top:1.25rem;">
+              <button class="btn btn-primary" onclick="processFeePayment()" id="feePayBtn">Proceed to Payment →</button>
+            </div>
+            <div class="form-success" id="feePaySuccess"></div>
+          </div>
+
+          <!-- PAYMENT HISTORY -->
+          <div style="background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-sm);">
+            <h3 style="font-size:1.05rem;margin-bottom:1rem;">📋 Payment History</h3>
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:0.85rem;" id="feeHistoryTable">
+                <thead>
+                  <tr style="background:var(--navy-dark);">
+                    <th style="color:var(--white);padding:10px 12px;text-align:left;font-weight:600;font-size:0.78rem;">Date</th>
+                    <th style="color:var(--white);padding:10px 12px;text-align:left;font-weight:600;font-size:0.78rem;">Term</th>
+                    <th style="color:var(--white);padding:10px 12px;text-align:left;font-weight:600;font-size:0.78rem;">Amount</th>
+                    <th style="color:var(--white);padding:10px 12px;text-align:left;font-weight:600;font-size:0.78rem;">Method</th>
+                    <th style="color:var(--white);padding:10px 12px;text-align:left;font-weight:600;font-size:0.78rem;">Type</th>
+                    <th style="color:var(--white);padding:10px 12px;text-align:left;font-weight:600;font-size:0.78rem;">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="feeHistoryBody">
+                  <tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">No payment records yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEES PAYMENT -->
+        <div class="portal-section" id="portal-fees">
+          <h2 style="font-size:1.3rem;margin-bottom:1.5rem;">💳 School Fees Payment</h2>
+
+          <!-- BALANCE TRACKER -->
+          <div style="background:var(--navy-dark);border-radius:var(--radius-lg);padding:1.75rem;margin-bottom:1.5rem;color:var(--white);">
+            <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;">2025/2026 · First Term · Fee Balance</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:1.5rem;">
+              <div style="text-align:center;">
+                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:var(--gold-light);" id="feeTotal">₦0</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:4px;">Total Fees</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:#4ade80;" id="feePaid">₦0</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:4px;">Amount Paid</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:#f87171;" id="feeBalance">₦0</div>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:4px;">Balance</div>
+              </div>
+            </div>
+            <!-- Progress Bar -->
+            <div style="background:rgba(255,255,255,0.1);border-radius:100px;height:10px;overflow:hidden;">
+              <div id="feeProgressBar" style="height:100%;background:linear-gradient(90deg,var(--gold),#4ade80);border-radius:100px;width:0%;transition:width 0.8s ease;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+              <span style="font-size:0.75rem;color:rgba(255,255,255,0.4);" id="feeInstallmentInfo">0 of 3 installments used</span>
+              <span style="font-size:0.75rem;color:rgba(255,255,255,0.4);" id="feePercent">0% paid</span>
+            </div>
+          </div>
+
+          <!-- INSTALLMENT WARNING -->
+          <div id="feeWarning" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:0.875rem;color:#856404;">
+            ⚠️ You have used all <strong>3 installments</strong> for this term. You may make <strong>one final payment</strong> to clear your remaining balance. Please contact the school bursar if you need assistance.
+          </div>
+          <div id="feeClearedMsg" style="display:none;background:#d4edda;border:1px solid #c3e6cb;border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:0.875rem;color:#155724;">
+            ✅ <strong>Fees fully paid!</strong> Your school fees for this term have been completely settled. Thank you!
+          </div>
+
+          <!-- PAYMENT FORM -->
+          <div class="form-wrap" id="feePaymentForm">
+            <h3 class="form-title">Make a Payment</h3>
+            <p class="form-subtitle">Choose full payment or enter an installment amount.</p>
+
+            <!-- TERM SELECT -->
+            <div class="form-group" style="margin-bottom:1rem;">
+              <label>Select Term</label>
+              <select id="feeTerm" onchange="updateFeeDisplay()">
+                <option value="first">First Term 2025/2026</option>
+                <option value="second">Second Term 2025/2026</option>
+                <option value="third">Third Term 2025/2026</option>
+              </select>
+            </div>
+
+            <!-- AMOUNT TYPE -->
+            <div style="margin-bottom:1rem;">
+              <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:8px;">Payment Type</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;text-align:center;" id="fullPayOption" onclick="selectFeeType('full')">
+                  <div style="font-size:1.3rem;margin-bottom:4px;">💰</div>
+                  <div style="font-weight:700;font-size:0.9rem;color:var(--navy);">Full Payment</div>
+                  <div style="font-size:0.78rem;color:var(--gray-600);margin-top:2px;" id="fullPayAmt">Pay full balance</div>
+                </div>
+                <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;text-align:center;" id="installPayOption" onclick="selectFeeType('installment')">
+                  <div style="font-size:1.3rem;margin-bottom:4px;">📅</div>
+                  <div style="font-weight:700;font-size:0.9rem;color:var(--navy);">Installment</div>
+                  <div style="font-size:0.78rem;color:var(--gray-600);margin-top:2px;" id="installLeft">Max 3 times/term</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AMOUNT INPUT (shown for installment) -->
+            <div class="form-group" id="amountInputWrap" style="display:none;margin-bottom:1rem;">
+              <label>Enter Amount (₦) *</label>
+              <input type="number" id="feeAmountInput" placeholder="e.g. 150000" min="1000" oninput="validateFeeAmount()">
+              <span style="font-size:0.78rem;color:var(--gray-400);" id="amountHint">Enter amount between ₦1,000 and your balance</span>
+            </div>
+
+            <!-- PAYMENT METHOD -->
+            <div style="margin-bottom:1.25rem;">
+              <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:8px;">Payment Method</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;" id="feeBankOption" onclick="selectFeePayMethod('bank')">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-400);" id="feeBankRadio"></div>
+                    <span style="font-weight:700;font-size:0.85rem;color:var(--navy);">🏦 Bank Transfer</span>
+                  </div>
+                  <div style="font-size:0.78rem;color:var(--gray-600);line-height:1.7;">
+                    <div>Opay · <strong>8150898386</strong></div>
+                    <div>Oladeji Opeyemi Ridwan</div>
+                    <div style="margin-top:4px;color:var(--gray-400);">Send proof to WhatsApp: 08150898386</div>
+                  </div>
+                </div>
+                <div style="border:2px solid var(--gray-200);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all 0.2s;" id="feePaystackOption" onclick="selectFeePayMethod('paystack')">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--gray-400);" id="feePaystackRadio"></div>
+                    <span style="font-weight:700;font-size:0.85rem;color:var(--navy);">💳 Paystack</span>
+                  </div>
+                  <div style="font-size:0.78rem;color:var(--gray-600);line-height:1.7;">
+                    <div>✅ Card / Transfer</div>
+                    <div>✅ USSD</div>
+                    <div style="margin-top:4px;color:var(--gray-400);">Instant confirmation</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="font-size:0.8rem;color:var(--danger);display:none;margin-bottom:0.75rem;" id="feeFormErr">⚠️ Please select payment type and method.</div>
+            <button class="btn btn-primary" onclick="processFeePayment()" id="feePayBtn">Proceed to Payment →</button>
+            <div class="form-success" id="feePaySuccess" style="margin-top:1rem;"></div>
+          </div>
+
+          <!-- PAYMENT HISTORY -->
+          <div style="margin-top:2rem;">
+            <h3 style="font-size:1.05rem;margin-bottom:1rem;">📜 Payment History</h3>
+            <div id="feeHistoryList">
+              <div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:0.875rem;background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);">No payments recorded yet for this term.</div>
             </div>
           </div>
         </div>
@@ -2500,7 +2812,6 @@ function loadPortal(student) {
   const initials = student.name.split(' ').map(w => w[0]).join('').substring(0,2);
   document.getElementById('portalAvatarInitial').textContent = initials;
   document.getElementById('portalUserName').textContent = student.name;
-  document.getElementById('portalAvatarInitial').textContent = initials;
   document.getElementById('profileAvatarBig').textContent = initials;
   document.getElementById('profileName').textContent = student.name;
   document.getElementById('profileAdmNo').textContent = student.admNo;
@@ -2508,6 +2819,8 @@ function loadPortal(student) {
   document.getElementById('profileGender').textContent = student.gender;
   document.getElementById('profileType').textContent = student.type;
   document.getElementById('profileHouse').textContent = student.house;
+  // Init fees
+  initFees(student.class, student.email || '', student.name, student.admNo);
 }
 
 function portalLogout() {
@@ -2524,6 +2837,240 @@ function switchPortal(section) {
   document.getElementById(`portal-${section}`).classList.add('active');
   document.querySelectorAll('.portal-nav-item').forEach(n => n.classList.remove('active'));
   event?.currentTarget?.classList.add('active');
+}
+
+// ===== FEES PAYMENT SYSTEM =====
+const FEES_SCHEDULE = {
+  'JSS 1': 350000, 'JSS 2': 350000, 'JSS 3': 350000,
+  'SSS 1 (Science)': 430000, 'SSS 2 (Science)': 430000, 'SSS 3 (Science)': 430000,
+  'SSS 1 (Arts)': 400000, 'SSS 2 (Arts)': 400000, 'SSS 3 (Arts)': 400000,
+  'SSS 1 (Commercial)': 400000, 'SSS 2 (Commercial)': 400000, 'SSS 3 (Commercial)': 400000,
+  'SSS 1': 400000, 'SSS 2': 400000, 'SSS 3': 400000,
+};
+
+let feeState = {
+  totalFees: 0,
+  amountPaid: 0,
+  installmentsUsed: 0,
+  payments: [],
+  selectedType: '',
+  selectedMethod: '',
+  studentEmail: '',
+  studentName: '',
+  admNo: ''
+};
+
+function initFees(studentClass, studentEmail, studentName, admNo) {
+  const cls = studentClass || 'JSS 1';
+  feeState.totalFees = FEES_SCHEDULE[cls] || 350000;
+  feeState.studentEmail = studentEmail || '';
+  feeState.studentName = studentName || '';
+  feeState.admNo = admNo || '';
+  // Load from localStorage
+  const saved = localStorage.getItem('fees_' + admNo + '_first');
+  if (saved) {
+    const data = JSON.parse(saved);
+    feeState.amountPaid = data.amountPaid || 0;
+    feeState.installmentsUsed = data.installmentsUsed || 0;
+    feeState.payments = data.payments || [];
+  }
+  updateFeeDisplay();
+}
+
+function updateFeeDisplay() {
+  const total = feeState.totalFees;
+  const paid = feeState.amountPaid;
+  const balance = Math.max(0, total - paid);
+  const pct = total > 0 ? Math.round((paid / total) * 100) : 0;
+  const instUsed = feeState.installmentsUsed;
+
+  document.getElementById('feeTotal').textContent = '₦' + total.toLocaleString();
+  document.getElementById('feePaid').textContent = '₦' + paid.toLocaleString();
+  document.getElementById('feeBalance').textContent = '₦' + balance.toLocaleString();
+  document.getElementById('feeProgressBar').style.width = pct + '%';
+  document.getElementById('feePercent').textContent = pct + '% paid';
+  document.getElementById('feeInstallmentInfo').textContent = instUsed + ' of 3 installments used';
+  document.getElementById('fullPayAmt').textContent = 'Pay ₦' + balance.toLocaleString();
+  document.getElementById('installLeft').textContent = (3 - Math.min(instUsed, 3)) + ' installment(s) left';
+
+  // Show/hide warnings
+  const cleared = balance <= 0;
+  document.getElementById('feeClearedMsg').style.display = cleared ? 'block' : 'none';
+  document.getElementById('feePaymentForm').style.display = cleared ? 'none' : 'block';
+  document.getElementById('feeWarning').style.display = (!cleared && instUsed >= 3) ? 'block' : 'none';
+
+  renderPaymentHistory();
+}
+
+function selectFeeType(type) {
+  feeState.selectedType = type;
+  const fullEl = document.getElementById('fullPayOption');
+  const instEl = document.getElementById('installPayOption');
+  const amtWrap = document.getElementById('amountInputWrap');
+  // Reset
+  fullEl.style.borderColor = 'var(--gray-200)'; fullEl.style.background = '';
+  instEl.style.borderColor = 'var(--gray-200)'; instEl.style.background = '';
+  document.getElementById('feeFormErr').style.display = 'none';
+  if (type === 'full') {
+    fullEl.style.borderColor = 'var(--gold)'; fullEl.style.background = 'var(--gold-pale)';
+    amtWrap.style.display = 'none';
+  } else {
+    instEl.style.borderColor = 'var(--gold)'; instEl.style.background = 'var(--gold-pale)';
+    amtWrap.style.display = 'block';
+    document.getElementById('feeAmountInput').focus();
+  }
+}
+
+function selectFeePayMethod(method) {
+  feeState.selectedMethod = method;
+  const bankEl = document.getElementById('feeBankOption');
+  const psEl = document.getElementById('feePaystackOption');
+  bankEl.style.borderColor = 'var(--gray-200)'; bankEl.style.background = '';
+  psEl.style.borderColor = 'var(--gray-200)'; psEl.style.background = '';
+  document.getElementById('feeBankRadio').innerHTML = '';
+  document.getElementById('feePaystackRadio').innerHTML = '';
+  document.getElementById('feeFormErr').style.display = 'none';
+  if (method === 'bank') {
+    bankEl.style.borderColor = 'var(--gold)'; bankEl.style.background = 'var(--gold-pale)';
+    document.getElementById('feeBankRadio').innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin:auto;"></div>';
+  } else {
+    psEl.style.borderColor = 'var(--gold)'; psEl.style.background = 'var(--gold-pale)';
+    document.getElementById('feePaystackRadio').innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin:auto;"></div>';
+  }
+}
+
+function validateFeeAmount() {
+  const val = parseInt(document.getElementById('feeAmountInput').value);
+  const balance = feeState.totalFees - feeState.amountPaid;
+  const hint = document.getElementById('amountHint');
+  if (val > balance) {
+    document.getElementById('feeAmountInput').value = balance;
+    hint.textContent = 'Amount cannot exceed your balance of ₦' + balance.toLocaleString();
+    hint.style.color = 'var(--danger)';
+  } else {
+    hint.textContent = 'Enter amount between ₦1,000 and ₦' + balance.toLocaleString();
+    hint.style.color = 'var(--gray-400)';
+  }
+}
+
+async function processFeePayment() {
+  const errEl = document.getElementById('feeFormErr');
+  if (!feeState.selectedType || !feeState.selectedMethod) {
+    errEl.style.display = 'block'; errEl.textContent = '⚠️ Please select payment type and method.';
+    return;
+  }
+
+  const balance = feeState.totalFees - feeState.amountPaid;
+  const instUsed = feeState.installmentsUsed;
+
+  // Check installment limit
+  if (feeState.selectedType === 'installment' && instUsed >= 3) {
+    errEl.style.display = 'block';
+    errEl.textContent = '⚠️ You have used all 3 installments. Please select Full Payment to clear your balance.';
+    return;
+  }
+
+  let payAmount = 0;
+  if (feeState.selectedType === 'full') {
+    payAmount = balance;
+  } else {
+    payAmount = parseInt(document.getElementById('feeAmountInput').value);
+    if (!payAmount || payAmount < 1000) {
+      errEl.style.display = 'block'; errEl.textContent = '⚠️ Please enter a valid amount (minimum ₦1,000).';
+      return;
+    }
+    if (payAmount > balance) payAmount = balance;
+  }
+
+  errEl.style.display = 'none';
+
+  // BANK TRANSFER
+  if (feeState.selectedMethod === 'bank') {
+    recordFeePayment(payAmount, 'Bank Transfer', 'MANUAL_' + Date.now());
+    document.getElementById('feePaySuccess').innerHTML = `
+      ✅ <strong>Payment recorded!</strong> Please transfer <strong>₦${payAmount.toLocaleString()}</strong> to:<br>
+      🏦 <strong>Opay · 8150898386 · Oladeji Opeyemi Ridwan</strong><br>
+      After payment, send your receipt to <strong>08150898386</strong> on WhatsApp with your admission number: <strong>${feeState.admNo}</strong>
+    `;
+    document.getElementById('feePaySuccess').classList.add('show');
+    return;
+  }
+
+  // PAYSTACK
+  if (typeof PaystackPop !== 'undefined') {
+    const handler = PaystackPop.setup({
+      key: 'pk_test_28a11f626c0b53bd1307cb18e42d21929c88b0b0',
+      email: feeState.studentEmail || 'student@ferdew.edu.ng',
+      amount: payAmount * 100,
+      currency: 'NGN',
+      ref: 'FERDEW_FEES_' + Date.now(),
+      metadata: { custom_fields: [{ display_name: 'Student', variable_name: 'student', value: feeState.studentName }, { display_name: 'Adm No', variable_name: 'adm_no', value: feeState.admNo }] },
+      callback: function(response) {
+        recordFeePayment(payAmount, 'Paystack', response.reference);
+        document.getElementById('feePaySuccess').innerHTML = `✅ <strong>Payment successful!</strong> ₦${payAmount.toLocaleString()} received. Reference: <strong>${response.reference}</strong>`;
+        document.getElementById('feePaySuccess').classList.add('show');
+      },
+      onClose: function() { alert('Payment cancelled. Your record was not updated.'); }
+    });
+    handler.openIframe();
+  } else {
+    // Demo mode
+    recordFeePayment(payAmount, feeState.selectedMethod === 'bank' ? 'Bank Transfer' : 'Paystack (Demo)', 'DEMO_' + Date.now());
+    document.getElementById('feePaySuccess').innerHTML = `✅ Payment of ₦${payAmount.toLocaleString()} recorded successfully! (Demo mode)`;
+    document.getElementById('feePaySuccess').classList.add('show');
+  }
+}
+
+function recordFeePayment(amount, method, ref) {
+  const isInstallment = feeState.selectedType === 'installment';
+  feeState.amountPaid += amount;
+  if (isInstallment) feeState.installmentsUsed++;
+  feeState.payments.unshift({
+    amount, method, ref,
+    date: new Date().toLocaleDateString('en-NG', { day:'numeric', month:'short', year:'numeric' }),
+    time: new Date().toLocaleTimeString('en-NG', { hour:'2-digit', minute:'2-digit' }),
+    type: isInstallment ? 'Installment ' + feeState.installmentsUsed : 'Full Payment'
+  });
+  // Save to localStorage
+  localStorage.setItem('fees_' + feeState.admNo + '_first', JSON.stringify({
+    amountPaid: feeState.amountPaid,
+    installmentsUsed: feeState.installmentsUsed,
+    payments: feeState.payments
+  }));
+  // Save to Firestore
+  if (firebaseReady) {
+    try { db.collection('fee_payments').add({ ...feeState.payments[0], admNo: feeState.admNo, studentName: feeState.studentName }); } catch(e){}
+  }
+  updateFeeDisplay();
+  // Reset form
+  feeState.selectedType = ''; feeState.selectedMethod = '';
+  document.getElementById('fullPayOption').style.borderColor = 'var(--gray-200)'; document.getElementById('fullPayOption').style.background = '';
+  document.getElementById('installPayOption').style.borderColor = 'var(--gray-200)'; document.getElementById('installPayOption').style.background = '';
+  document.getElementById('feeBankOption').style.borderColor = 'var(--gray-200)'; document.getElementById('feeBankOption').style.background = '';
+  document.getElementById('feePaystackOption').style.borderColor = 'var(--gray-200)'; document.getElementById('feePaystackOption').style.background = '';
+  document.getElementById('feeBankRadio').innerHTML = ''; document.getElementById('feePaystackRadio').innerHTML = '';
+  document.getElementById('amountInputWrap').style.display = 'none';
+  document.getElementById('feeAmountInput').value = '';
+}
+
+function renderPaymentHistory() {
+  const list = document.getElementById('feeHistoryList');
+  if (!feeState.payments.length) {
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:0.875rem;background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);">No payments recorded yet for this term.</div>';
+    return;
+  }
+  list.innerHTML = feeState.payments.map((p, i) => `
+    <div style="background:var(--white);border-radius:var(--radius);padding:1rem 1.25rem;box-shadow:var(--shadow-sm);border-left:4px solid ${i===0?'var(--gold)':'var(--navy)'};margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-weight:700;font-size:0.9rem;color:var(--navy);">₦${p.amount.toLocaleString()}</div>
+        <div style="font-size:0.78rem;color:var(--gray-600);">${p.type} · ${p.method}</div>
+        <div style="font-size:0.75rem;color:var(--gray-400);">${p.date} at ${p.time}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:0.72rem;color:var(--gray-400);">Ref: ${p.ref.substring(0,20)}...</div>
+        <span style="background:#d4edda;color:#155724;font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:100px;">✓ Recorded</span>
+      </div>
+    </div>`).join('');
 }
 
 // ===== INIT =====
