@@ -3779,8 +3779,175 @@ async function adminConfirmFee(payId,newStatus){
   try{ await db.collection('fee_payments').doc(payId).update({status:newStatus}); alert(newStatus==='confirmed'?'✅ Payment confirmed!':'❌ Payment rejected.'); loadFeePayments(); }catch(e){ alert('Error: '+e.message); }
 }
 
-// ===== PHOTO UPLOAD MANAGER =====
+// ===== PHOTO UPLOAD MANAGER (ImgBB) =====
+const IMGBB_API_KEY = 'b98d84214aac1c878f4c10d824d39c5e';
 let selectedFiles = [];
+
+function handlePhotoSelect(files) {
+  selectedFiles = Array.from(files);
+  showPhotoPreviews();
+}
+
+function handlePhotoDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').style.borderColor = 'var(--gray-200)';
+  document.getElementById('dropZone').style.background = 'var(--off-white)';
+  selectedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  showPhotoPreviews();
+}
+
+function showPhotoPreviews() {
+  const grid = document.getElementById('photoPreviewGrid');
+  const uploadBtn = document.getElementById('uploadBtn');
+  if (!grid) return;
+
+  if (!selectedFiles.length) {
+    grid.innerHTML = '';
+    if (uploadBtn) uploadBtn.style.display = 'none';
+    return;
+  }
+
+  grid.innerHTML = selectedFiles.map((file, i) => {
+    const url = URL.createObjectURL(file);
+    const size = (file.size / 1024 / 1024).toFixed(2);
+    const tooBig = file.size > 32 * 1024 * 1024;
+    return `
+      <div style="position:relative;border-radius:var(--radius);overflow:hidden;border:2px solid ${tooBig ? 'var(--danger)' : 'var(--gray-200)'};">
+        <img src="${url}" style="width:100%;height:120px;object-fit:cover;display:block;">
+        <div style="padding:6px 8px;background:var(--white);">
+          <div style="font-size:0.72rem;color:var(--gray-600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${file.name}</div>
+          <div style="font-size:0.7rem;color:${tooBig ? 'var(--danger)' : 'var(--gray-400)'};">${size}MB ${tooBig ? '⚠️ Too large' : '✓'}</div>
+        </div>
+        <button onclick="removePhoto(${i})" style="position:absolute;top:4px;right:4px;background:var(--danger);color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:0.75rem;cursor:pointer;line-height:1;">✕</button>
+      </div>`;
+  }).join('');
+
+  if (uploadBtn) uploadBtn.style.display = 'flex';
+}
+
+function removePhoto(index) {
+  selectedFiles.splice(index, 1);
+  showPhotoPreviews();
+}
+
+function clearPhotoSelection() {
+  selectedFiles = [];
+  document.getElementById('photoFileInput').value = '';
+  document.getElementById('photoPreviewGrid').innerHTML = '';
+  const uploadBtn = document.getElementById('uploadBtn');
+  if (uploadBtn) uploadBtn.style.display = 'none';
+}
+
+async function uploadPhotos() {
+  if (!selectedFiles.length) { alert('Please select photos first.'); return; }
+
+  const tooBig = selectedFiles.filter(f => f.size > 32 * 1024 * 1024);
+  if (tooBig.length) { alert(`${tooBig.length} photo(s) exceed 32MB limit. Please remove them.`); return; }
+
+  const category = document.getElementById('photoCategory')?.value || 'general';
+  const caption = document.getElementById('photoCaption')?.value || '';
+  const btn = document.getElementById('uploadBtn');
+  const progressWrap = document.getElementById('uploadProgressWrap');
+  const progressBar = document.getElementById('uploadProgressBar');
+  const progressText = document.getElementById('uploadStatusText');
+  const progressPercent = document.getElementById('uploadPercent');
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading...'; }
+  if (progressWrap) progressWrap.style.display = 'block';
+
+  let uploaded = 0;
+  let errors = 0;
+
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const file = selectedFiles[i];
+    if (progressText) progressText.textContent = `Uploading ${i + 1} of ${selectedFiles.length}: ${file.name}`;
+
+    try {
+      // Convert to base64
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Update progress
+      const overall = Math.round(((i / selectedFiles.length)) * 100);
+      if (progressBar) progressBar.style.width = overall + '%';
+      if (progressPercent) progressPercent.textContent = overall + '%';
+
+      // Upload to ImgBB
+      const formData = new FormData();
+      formData.append('image', base64);
+      formData.append('name', file.name.replace(/\.[^/.]+$/, ''));
+
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const imgUrl = result.data.display_url;
+        const deleteUrl = result.data.delete_url;
+
+        // Save metadata to Firestore
+        if (firebaseReady) {
+          await db.collection('gallery_photos').add({
+            url: imgUrl,
+            deleteUrl,
+            category,
+            caption,
+            name: file.name,
+            size: file.size,
+            uploadedBy: currentAdminName || 'Admin',
+            uploadedAt: new Date().toISOString(),
+            visible: true
+          });
+        }
+        uploaded++;
+      } else {
+        console.log('ImgBB error:', result);
+        errors++;
+      }
+
+      // Update progress after each file
+      const overallAfter = Math.round(((i + 1) / selectedFiles.length) * 100);
+      if (progressBar) progressBar.style.width = overallAfter + '%';
+      if (progressPercent) progressPercent.textContent = overallAfter + '%';
+
+    } catch(err) {
+      console.log('Upload error:', err.message);
+      errors++;
+    }
+  }
+
+  // Done
+  if (progressBar) progressBar.style.width = '100%';
+  if (progressPercent) progressPercent.textContent = '100%';
+
+  if (uploaded > 0) {
+    if (progressText) progressText.textContent = `✅ ${uploaded} photo(s) uploaded successfully!${errors > 0 ? ` (${errors} failed)` : ''}`;
+    document.getElementById('uploadSuccess')?.classList.add('show');
+  } else {
+    if (progressText) progressText.textContent = `❌ Upload failed. Check your internet connection and try again.`;
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = '📤 Upload to Gallery'; btn.style.display = 'none'; }
+
+  clearPhotoSelection();
+  setTimeout(() => {
+    if (progressWrap) progressWrap.style.display = 'none';
+    if (progressBar) progressBar.style.width = '0%';
+    document.getElementById('uploadSuccess')?.classList.remove('show');
+  }, 4000);
+
+  if (uploaded > 0) {
+    loadGalleryPhotos();
+    loadPublicGallery();
+  }
+}
 
 function handlePhotoSelect(files) {
   selectedFiles = Array.from(files);
@@ -3837,103 +4004,6 @@ function clearPhotoSelection() {
   if (uploadBtn) uploadBtn.style.display = 'none';
 }
 
-async function uploadPhotos() {
-  if (!selectedFiles.length) { alert('Please select photos first.'); return; }
-
-  // Validate sizes
-  const tooBig = selectedFiles.filter(f => f.size > 5 * 1024 * 1024);
-  if (tooBig.length) { alert(`${tooBig.length} photo(s) exceed 5MB limit. Please remove them.`); return; }
-
-  const category = document.getElementById('photoCategory')?.value || 'general';
-  const caption = document.getElementById('photoCaption')?.value || '';
-  const btn = document.getElementById('uploadBtn');
-  const progressWrap = document.getElementById('uploadProgressWrap');
-  const progressBar = document.getElementById('uploadProgressBar');
-  const progressText = document.getElementById('uploadStatusText');
-  const progressPercent = document.getElementById('uploadPercent');
-
-  if (btn) { btn.disabled = true; btn.textContent = 'Uploading...'; }
-  if (progressWrap) progressWrap.style.display = 'block';
-
-  let uploaded = 0;
-
-  for (let i = 0; i < selectedFiles.length; i++) {
-    const file = selectedFiles[i];
-    const fileName = `gallery/${category}/${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-
-    if (progressText) progressText.textContent = `Uploading ${i + 1} of ${selectedFiles.length}: ${file.name}`;
-
-    if (firebaseReady && storage) {
-      try {
-        // Upload to Firebase Storage
-        const ref = storage.ref(fileName);
-        const uploadTask = ref.put(file);
-
-        await new Promise((resolve, reject) => {
-          uploadTask.on('state_changed',
-            (snapshot) => {
-              const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-              const overall = Math.round(((i / selectedFiles.length) + (pct / 100 / selectedFiles.length)) * 100);
-              if (progressBar) progressBar.style.width = overall + '%';
-              if (progressPercent) progressPercent.textContent = overall + '%';
-            },
-            reject,
-            async () => {
-              // Get download URL
-              const url = await uploadTask.snapshot.ref.getDownloadURL();
-              // Save metadata to Firestore
-              await db.collection('gallery_photos').add({
-                url, fileName, category, caption,
-                name: file.name,
-                size: file.size,
-                uploadedBy: currentAdminName || 'Admin',
-                uploadedAt: new Date().toISOString(),
-                visible: true
-              });
-              uploaded++;
-              resolve();
-            }
-          );
-        });
-      } catch(err) {
-        console.log('Upload error:', err.message);
-        // Demo fallback - save with object URL
-        await db.collection('gallery_photos').add({
-          url: URL.createObjectURL(file),
-          fileName, category, caption,
-          name: file.name,
-          uploadedAt: new Date().toISOString(),
-          visible: true
-        }).catch(()=>{});
-        uploaded++;
-      }
-    } else {
-      // Demo mode
-      await new Promise(r => setTimeout(r, 500));
-      const overall = Math.round(((i + 1) / selectedFiles.length) * 100);
-      if (progressBar) progressBar.style.width = overall + '%';
-      if (progressPercent) progressPercent.textContent = overall + '%';
-      uploaded++;
-    }
-  }
-
-  // Done
-  if (progressBar) progressBar.style.width = '100%';
-  if (progressText) progressText.textContent = `✅ ${uploaded} photo(s) uploaded successfully!`;
-  if (btn) { btn.disabled = false; btn.textContent = '📤 Upload to Gallery'; btn.style.display = 'none'; }
-  document.getElementById('uploadSuccess')?.classList.add('show');
-
-  clearPhotoSelection();
-  setTimeout(() => {
-    if (progressWrap) progressWrap.style.display = 'none';
-    if (progressBar) progressBar.style.width = '0%';
-    document.getElementById('uploadSuccess')?.classList.remove('show');
-  }, 4000);
-
-  loadGalleryPhotos();
-  // Also reload the public gallery
-  loadPublicGallery();
-}
 
 async function loadGalleryPhotos() {
   const grid = document.getElementById('adminGalleryGrid');
@@ -3946,9 +4016,8 @@ async function loadGalleryPhotos() {
   }
 
   try {
-    const categoryFilter = document.getElementById('filterCategory')?.value || '';
+    // Simple query without composite index
     let query = db.collection('gallery_photos').orderBy('uploadedAt', 'desc');
-    if (categoryFilter) query = query.where('category', '==', categoryFilter);
     const snap = await query.get();
 
     if (snap.empty) {
@@ -3956,7 +4025,18 @@ async function loadGalleryPhotos() {
       return;
     }
 
-    grid.innerHTML = snap.docs.map(doc => {
+    // Filter category client-side to avoid needing composite index
+    const categoryFilter = document.getElementById('filterCategory')?.value || '';
+    const docs = categoryFilter
+      ? snap.docs.filter(d => d.data().category === categoryFilter)
+      : snap.docs;
+
+    if (!docs.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--gray-400);">No photos in this category yet.</div>';
+      return;
+    }
+
+    grid.innerHTML = docs.map(doc => {
       const p = doc.data();
       const date = p.uploadedAt ? new Date(p.uploadedAt).toLocaleDateString('en-NG') : '';
       return `
@@ -3978,16 +4058,12 @@ async function loadGalleryPhotos() {
   }
 }
 
-async function deletePhoto(docId, fileName) {
+async function deletePhoto(docId, deleteUrl) {
   if (!confirm('Delete this photo permanently?')) return;
   if (!firebaseReady) { alert('Firebase not connected.'); return; }
   try {
-    // Delete from Firestore
     await db.collection('gallery_photos').doc(docId).delete();
-    // Delete from Storage if fileName exists
-    if (fileName) {
-      try { await storage.ref(fileName).delete(); } catch(e) {}
-    }
+    // Note: ImgBB free plan doesn't support API deletion
     loadGalleryPhotos();
     loadPublicGallery();
   } catch(err) { alert('Error deleting: ' + err.message); }
@@ -4007,17 +4083,19 @@ async function loadPublicGallery() {
   if (!firebaseReady) return;
   try {
     const snap = await db.collection('gallery_photos')
-      .where('visible', '==', true)
       .orderBy('uploadedAt', 'desc')
       .get();
 
     if (snap.empty) return;
 
+    // Filter visible client-side
+    const visibleDocs = snap.docs.filter(d => d.data().visible !== false);
+
     const galleryGrid = document.querySelector('#page-gallery .gallery-grid');
     if (!galleryGrid) return;
 
     // Prepend real uploaded photos to gallery
-    const realPhotos = snap.docs.map(doc => {
+    const realPhotos = visibleDocs.map(doc => {
       const p = doc.data();
       return `
         <div class="gallery-item">
