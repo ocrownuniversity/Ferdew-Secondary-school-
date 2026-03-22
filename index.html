@@ -1939,19 +1939,56 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
 
       <!-- NEWS -->
       <div class="dash-section" id="dash-news">
-        <div class="dash-header"><h2>Manage News Posts</h2></div>
-        <div class="form-wrap" style="margin-bottom:2rem;">
-          <h3 class="form-title">Add News Post</h3>
-          <div class="form-grid">
-            <div class="form-group"><label>Title</label><input type="text" id="news_title" placeholder="Post title"></div>
-            <div class="form-group"><label>Date</label><input type="text" id="news_date" placeholder="e.g. 21 March 2025"></div>
-            <div class="form-group full"><label>Content</label><textarea id="news_content" placeholder="News content..."></textarea></div>
-          </div>
-          <button class="btn btn-primary btn-sm" style="margin-top:1rem" onclick="addNewsPost()">Publish Post</button>
-          <div class="form-success" id="newsPostSuccess">✅ Post published!</div>
+        <div class="dash-header">
+          <h2>📰 News Manager</h2>
+          <button class="btn btn-sm btn-navy" onclick="loadNewsPosts()">🔄 Refresh</button>
         </div>
-        <div id="newsList" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+        <!-- ADD NEWS POST -->
+        <div class="form-wrap" style="margin-bottom:2rem;">
+          <h3 class="form-title">Add New Post</h3>
+          <div style="background:var(--gold-pale);border:1px solid rgba(201,150,42,0.3);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.82rem;color:var(--gray-600);">
+            📌 Upload image to <strong>imgbb.com</strong> → copy <strong>Direct link</strong> → paste below
+          </div>
+
+          <!-- IMAGE PREVIEW -->
+          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:1rem;flex-wrap:wrap;">
+            <div id="newsImgPreview" style="width:120px;height:90px;border-radius:var(--radius);background:var(--gray-100);border:2px dashed var(--gray-200);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:2rem;">🖼️</div>
+            <div style="flex:1;min-width:200px;">
+              <div class="form-group" style="margin-bottom:0.75rem;">
+                <label>News Image URL (from ImgBB)</label>
+                <input type="url" id="news_img" placeholder="https://i.ibb.co/xxx/image.jpg" oninput="previewImg('newsImgPreview',this.value)">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group"><label>Title *</label><input type="text" id="news_title" placeholder="News post title"></div>
+            <div class="form-group"><label>Date *</label><input type="text" id="news_date" placeholder="e.g. 22 March 2025"></div>
+            <div class="form-group">
+              <label>Category</label>
+              <select id="news_category">
+                <option value="achievement">🏆 Achievement</option>
+                <option value="admissions">📝 Admissions</option>
+                <option value="events">🎉 Events</option>
+                <option value="results">📊 Results</option>
+                <option value="sports">⚽ Sports</option>
+                <option value="general">📰 General</option>
+              </select>
+            </div>
+            <div class="form-group full"><label>Content *</label><textarea id="news_content" placeholder="Write the full news content here..."></textarea></div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:1rem" onclick="addNewsPost()">📤 Publish Post</button>
+          <div class="form-success" id="newsPostSuccess">✅ News post published successfully!</div>
+        </div>
+
+        <!-- ALL NEWS POSTS -->
+        <h3 style="font-size:1rem;margin-bottom:1rem;color:var(--navy);">All News Posts</h3>
+        <div id="newsList" style="display:flex;flex-direction:column;gap:16px;">
+          <div style="text-align:center;padding:2rem;color:var(--gray-400);">Click "Refresh" to load news posts.</div>
+        </div>
       </div>
+
 
       <!-- GALLERY -->
       <div class="dash-section" id="dash-gallery">
@@ -2852,6 +2889,7 @@ function showPage(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (page === 'home') initStats();
   if (page === 'gallery') loadPublicGallery();
+  if (page === 'news') loadPublicNews();
 }
 
 // ===== NAVBAR SCROLL =====
@@ -3448,18 +3486,179 @@ function filterApps(query='', classFilter='') {
 }
 
 async function addNewsPost() {
-  const data = {
-    title: document.getElementById('news_title').value,
-    date: document.getElementById('news_date').value,
-    content: document.getElementById('news_content').value,
-    timestamp: new Date().toISOString()
-  };
-  if (!data.title) return;
-  if (firebaseReady) { try { await db.collection('news').add(data); } catch(e){} }
+  const title = document.getElementById('news_title')?.value?.trim();
+  const date = document.getElementById('news_date')?.value?.trim();
+  const content = document.getElementById('news_content')?.value?.trim();
+  const img = document.getElementById('news_img')?.value?.trim();
+  const category = document.getElementById('news_category')?.value || 'general';
+  if (!title || !content) { alert('Please enter title and content.'); return; }
+
+  const data = { title, date, content, img, category, timestamp: new Date().toISOString(), visible: true };
+
+  if (firebaseReady) {
+    try { await db.collection('news').add(data); } catch(e) { console.log(e); }
+  }
   document.getElementById('newsPostSuccess').classList.add('show');
+  setTimeout(() => document.getElementById('newsPostSuccess').classList.remove('show'), 3000);
+  document.getElementById('news_title').value = '';
+  document.getElementById('news_date').value = '';
+  document.getElementById('news_content').value = '';
+  document.getElementById('news_img').value = '';
+  document.getElementById('newsImgPreview').innerHTML = '🖼️';
+  loadNewsPosts();
+  loadPublicNews();
+}
+
+async function loadNewsPosts() {
   const list = document.getElementById('newsList');
-  list.insertAdjacentHTML('afterbegin', `<div style="background:var(--white);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow-sm);border-left:3px solid var(--gold);margin-bottom:10px;"><strong>${data.title}</strong><div style="font-size:0.8rem;color:var(--gray-600);margin-top:4px;">${data.date} · ${data.content.substring(0,80)}...</div></div>`);
-  document.getElementById('news_title').value=''; document.getElementById('news_content').value='';
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading...</div>';
+  if (!firebaseReady) { list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">Firebase not connected.</div>'; return; }
+  try {
+    const snap = await db.collection('news').get();
+    if (snap.empty) { list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">No news posts yet.</div>'; return; }
+    const docs = snap.docs.sort((a,b) => (b.data().timestamp||'').localeCompare(a.data().timestamp||''));
+    list.innerHTML = docs.map(doc => {
+      const n = doc.data();
+      const isVisible = n.visible !== false;
+      const previewId = `npreview_${doc.id}`;
+      const urlInputId = `nurlinput_${doc.id}`;
+      const titleInputId = `ntitle_${doc.id}`;
+      const contentInputId = `ncontent_${doc.id}`;
+      const dateInputId = `ndate_${doc.id}`;
+      return `
+        <div id="newscard_${doc.id}" style="background:var(--white);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);">
+          <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+            <!-- IMAGE PREVIEW -->
+            <div id="${previewId}" style="width:120px;height:90px;border-radius:var(--radius);overflow:hidden;flex-shrink:0;background:var(--gray-100);border:2px solid var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+              ${n.img ? `<img src="${n.img}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='📰'">` : '📰'}
+            </div>
+            <div style="flex:1;min-width:200px;">
+              <!-- STATUS BADGES -->
+              <div style="display:flex;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
+                <span style="background:var(--navy-dark);color:var(--gold-light);font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:100px;text-transform:uppercase;">${n.category||'general'}</span>
+                <span style="background:${isVisible?'#d4edda':'#f8d7da'};color:${isVisible?'#155724':'#721c24'};font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:100px;">${isVisible?'👁 Visible':'🚫 Hidden'}</span>
+                <span style="font-size:0.72rem;color:var(--gray-400);">${n.date||''}</span>
+              </div>
+
+              <!-- CHANGE IMAGE URL -->
+              <div style="margin-bottom:0.75rem;">
+                <label style="font-size:0.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">News Image URL</label>
+                <div style="display:flex;gap:8px;">
+                  <input type="url" id="${urlInputId}" value="${n.img||''}" placeholder="Paste new ImgBB direct link"
+                    oninput="previewImg('${previewId}',this.value)"
+                    style="flex:1;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.82rem;font-family:var(--font-body);">
+                  <button onclick="updateNewsImg('${doc.id}','${urlInputId}')" style="background:var(--navy);color:white;border:none;padding:8px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;font-weight:600;white-space:nowrap;">Update</button>
+                </div>
+              </div>
+
+              <!-- TITLE & DATE -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0.75rem;">
+                <input type="text" id="${titleInputId}" value="${n.title||''}" placeholder="News title" style="padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.82rem;font-family:var(--font-body);">
+                <input type="text" id="${dateInputId}" value="${n.date||''}" placeholder="Date" style="padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.82rem;font-family:var(--font-body);">
+              </div>
+
+              <!-- CONTENT -->
+              <div style="margin-bottom:0.75rem;">
+                <textarea id="${contentInputId}" style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.82rem;font-family:var(--font-body);resize:vertical;min-height:70px;">${n.content||''}</textarea>
+              </div>
+
+              <!-- ACTION BUTTONS -->
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="saveNewsDetails('${doc.id}','${titleInputId}','${dateInputId}','${contentInputId}','${urlInputId}')" style="background:var(--success);color:white;border:none;padding:7px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;font-weight:600;">💾 Save</button>
+                <button onclick="toggleNewsVisibility('${doc.id}',${!isVisible})" style="background:${isVisible?'var(--gold)':'var(--success)'};color:${isVisible?'var(--navy-dark)':'white'};border:none;padding:7px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;font-weight:600;">${isVisible?'🚫 Hide':'👁 Show'}</button>
+                <button onclick="deleteNewsPost('${doc.id}')" style="background:var(--danger);color:white;border:none;padding:7px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;font-weight:600;">🗑 Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(err) {
+    list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--danger);">Error: ${err.message}</div>`;
+  }
+}
+
+async function updateNewsImg(docId, inputId) {
+  const url = document.getElementById(inputId)?.value?.trim();
+  if (!url || !url.startsWith('http')) { alert('Please enter a valid image URL.'); return; }
+  if (!firebaseReady) return;
+  try {
+    await db.collection('news').doc(docId).update({ img: url });
+    alert('✅ Image updated!');
+    loadPublicNews();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+async function saveNewsDetails(docId, titleId, dateId, contentId, urlId) {
+  if (!firebaseReady) return;
+  try {
+    await db.collection('news').doc(docId).update({
+      title: document.getElementById(titleId)?.value || '',
+      date: document.getElementById(dateId)?.value || '',
+      content: document.getElementById(contentId)?.value || '',
+      img: document.getElementById(urlId)?.value || '',
+    });
+    alert('✅ News post saved!');
+    loadNewsPosts();
+    loadPublicNews();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+async function toggleNewsVisibility(docId, visible) {
+  if (!firebaseReady) return;
+  try {
+    await db.collection('news').doc(docId).update({ visible });
+    loadNewsPosts();
+    loadPublicNews();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+async function deleteNewsPost(docId) {
+  if (!confirm('Delete this news post permanently?')) return;
+  if (!firebaseReady) return;
+  try {
+    await db.collection('news').doc(docId).delete();
+    loadNewsPosts();
+    loadPublicNews();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+// Load news from Firestore into public news pages
+async function loadPublicNews() {
+  if (!firebaseReady) return;
+  try {
+    const snap = await db.collection('news').get();
+    if (snap.empty) return;
+    const docs = snap.docs
+      .filter(d => d.data().visible !== false)
+      .sort((a,b) => (b.data().timestamp||'').localeCompare(a.data().timestamp||''));
+    if (!docs.length) return;
+
+    // Update news grids on homepage and news page
+    ['#page-home .news-grid', '#page-news .news-grid'].forEach(selector => {
+      const grid = document.querySelector(selector);
+      if (!grid) return;
+      // Remove previously loaded dynamic news
+      grid.querySelectorAll('.dynamic-news').forEach(el => el.remove());
+      // Add new ones at top
+      const html = docs.slice(0, selector.includes('home') ? 3 : 6).map(doc => {
+        const n = doc.data();
+        const imgHtml = n.img
+          ? `<div class="news-img" style="overflow:hidden;padding:0;"><img src="${n.img}" style="width:100%;height:180px;object-fit:cover;" onerror="this.parentElement.innerHTML='📰'" alt="${n.title}"></div>`
+          : `<div class="news-img blue">📰</div>`;
+        return `
+          <div class="news-card dynamic-news">
+            ${imgHtml}
+            <div class="news-body">
+              <div class="news-date">${n.date||''}</div>
+              <h3>${n.title||''}</h3>
+              <p>${(n.content||'').substring(0,120)}...</p>
+            </div>
+          </div>`;
+      }).join('');
+      grid.insertAdjacentHTML('afterbegin', html);
+    });
+  } catch(err) { console.log('News load error:', err.message); }
 }
 
 async function addGalleryItem() {
@@ -4645,8 +4844,8 @@ if ('serviceWorker' in navigator) {
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
   initStats();
-  // Load real photos into public gallery
   setTimeout(loadPublicGallery, 1000);
+  setTimeout(loadPublicNews, 1500);
 });
 
 // Trigger fade-in on section change
