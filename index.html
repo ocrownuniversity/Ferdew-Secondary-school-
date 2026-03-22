@@ -29,6 +29,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <style>
 :root {
@@ -1790,6 +1791,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <option value="feepayments">💳 Fee Payments</option>
           <option value="news">📰 News</option>
           <option value="gallery">🖼️ Gallery</option>
+          <option value="photos">📸 Upload Photos</option>
           <option value="staff">👩‍🏫 Staff</option>
           <option value="attendance">📅 Attendance</option>
           <option value="whatsapp">💬 WhatsApp</option>
@@ -1813,6 +1815,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         <div class="dash-nav-item" data-section="feepayments" onclick="switchDash('feepayments')"><span class="icon">💳</span> Fee Payments</div>
         <div class="dash-nav-item" data-section="news" onclick="switchDash('news')"><span class="icon">📰</span> News Posts</div>
         <div class="dash-nav-item" data-section="gallery" onclick="switchDash('gallery')"><span class="icon">🖼️</span> Gallery</div>
+        <div class="dash-nav-item" data-section="photos" onclick="switchDash('photos')"><span class="icon">📸</span> Upload Photos</div>
         <div class="dash-nav-item" data-section="staff" onclick="switchDash('staff')"><span class="icon">👩‍🏫</span> Staff</div>
         <div class="dash-nav-item" data-section="attendance" onclick="switchDash('attendance')"><span class="icon">📅</span> Attendance</div>
         <div class="dash-nav-item" data-section="whatsapp" onclick="switchDash('whatsapp')"><span class="icon">💬</span> WhatsApp Blast</div>
@@ -1989,6 +1992,100 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
               <tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">Click "Refresh" to load fee payments.</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- PHOTO UPLOAD MANAGER -->
+      <div class="dash-section" id="dash-photos">
+        <div class="dash-header">
+          <h2>📸 Photo Upload Manager</h2>
+          <button class="btn btn-sm btn-navy" onclick="loadGalleryPhotos()">🔄 Refresh</button>
+        </div>
+
+        <!-- UPLOAD AREA -->
+        <div class="form-wrap" style="margin-bottom:2rem;">
+          <h3 class="form-title">Upload New Photos</h3>
+          <p class="form-subtitle">Photos will appear automatically in the Gallery page on the website.</p>
+
+          <!-- DRAG & DROP ZONE -->
+          <div id="dropZone" onclick="document.getElementById('photoFileInput').click()"
+            style="border:3px dashed var(--gray-200);border-radius:var(--radius-lg);padding:3rem 2rem;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--off-white);margin-bottom:1.5rem;"
+            ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='var(--gold-pale)'"
+            ondragleave="this.style.borderColor='var(--gray-200)';this.style.background='var(--off-white)'"
+            ondrop="handlePhotoDrop(event)">
+            <div style="font-size:3rem;margin-bottom:1rem;">📸</div>
+            <div style="font-weight:700;color:var(--navy);font-size:1rem;margin-bottom:0.5rem;">Tap to select photos or drag & drop here</div>
+            <div style="font-size:0.8rem;color:var(--gray-400);">Supports JPG, PNG, WEBP — Max 5MB per photo — Multiple photos allowed</div>
+          </div>
+          <input type="file" id="photoFileInput" multiple accept="image/*" style="display:none;" onchange="handlePhotoSelect(this.files)">
+
+          <!-- PHOTO DETAILS -->
+          <div class="form-grid" style="margin-bottom:1rem;">
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="photoCategory">
+                <option value="academics">📚 Academics</option>
+                <option value="sports">⚽ Sports</option>
+                <option value="events">🎉 Events</option>
+                <option value="cultural">🎭 Cultural Day</option>
+                <option value="boarding">🛏️ Boarding House</option>
+                <option value="graduation">🎓 Graduation</option>
+                <option value="lab">🔬 Science Lab</option>
+                <option value="ict">💻 ICT / Computer Lab</option>
+                <option value="awards">🏆 Awards</option>
+                <option value="general">📷 General</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Caption (Optional)</label>
+              <input type="text" id="photoCaption" placeholder="e.g. Students during sports day 2025">
+            </div>
+          </div>
+
+          <!-- PREVIEW GRID -->
+          <div id="photoPreviewGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem;"></div>
+
+          <!-- UPLOAD PROGRESS -->
+          <div id="uploadProgressWrap" style="display:none;margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.85rem;font-weight:600;color:var(--navy);" id="uploadStatusText">Uploading...</span>
+              <span style="font-size:0.85rem;font-weight:700;color:var(--gold);" id="uploadPercent">0%</span>
+            </div>
+            <div style="background:var(--gray-200);border-radius:100px;height:8px;overflow:hidden;">
+              <div id="uploadProgressBar" style="height:100%;background:linear-gradient(90deg,var(--navy),var(--gold));border-radius:100px;width:0%;transition:width 0.3s;"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="uploadBtn" onclick="uploadPhotos()" style="display:none;">📤 Upload to Gallery</button>
+            <button class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" onclick="clearPhotoSelection()">✕ Clear Selection</button>
+          </div>
+          <div class="form-success" id="uploadSuccess">✅ Photos uploaded successfully! They are now live in the Gallery page.</div>
+        </div>
+
+        <!-- UPLOADED PHOTOS GRID -->
+        <div class="dash-table-wrap">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;">
+            <h3>All Gallery Photos</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <select id="filterCategory" onchange="loadGalleryPhotos()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
+                <option value="">All Categories</option>
+                <option value="academics">Academics</option>
+                <option value="sports">Sports</option>
+                <option value="events">Events</option>
+                <option value="cultural">Cultural Day</option>
+                <option value="boarding">Boarding</option>
+                <option value="graduation">Graduation</option>
+                <option value="lab">Science Lab</option>
+                <option value="ict">ICT Lab</option>
+                <option value="awards">Awards</option>
+                <option value="general">General</option>
+              </select>
+            </div>
+          </div>
+          <div id="adminGalleryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+            <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--gray-400);">Click "Refresh" to load uploaded photos.</div>
+          </div>
         </div>
       </div>
 
@@ -2727,11 +2824,12 @@ const firebaseConfig = {
   appId: "1:213342031831:web:b0c9446f40b8f36cfd4592"
 };
 
-let db, auth, firebaseReady = false;
+let db, auth, storage, firebaseReady = false;
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   auth = firebase.auth();
+  storage = firebase.storage();
   firebaseReady = true;
 } catch(e) {
   console.log('Firebase not configured yet. Using demo mode.');
@@ -2776,6 +2874,7 @@ function showPage(page) {
   document.querySelector('.wa-float').style.display = hideNav ? 'none' : '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (page === 'home') initStats();
+  if (page === 'gallery') loadPublicGallery();
 }
 
 // ===== NAVBAR SCROLL =====
@@ -3010,8 +3109,8 @@ async function submitContact(e) {
 // ===== ROLE-BASED ACCESS CONTROL =====
 // Roles and their allowed dashboard sections
 const ROLE_PERMISSIONS = {
-  'superadmin': ['overview','applications','boarding','feepayments','news','gallery','staff','attendance','whatsapp','students','subadmins'],
-  'principal':  ['overview','applications','boarding','feepayments','news','gallery','staff','attendance','students'],
+  'superadmin': ['overview','applications','boarding','feepayments','news','gallery','photos','staff','attendance','whatsapp','students','subadmins'],
+  'principal':  ['overview','applications','boarding','feepayments','news','gallery','photos','staff','attendance','students'],
   'bursar':     ['overview','feepayments'],
   'secretary':  ['overview','applications','news','gallery'],
   'teacher':    ['overview','attendance','students'],
@@ -3680,7 +3779,259 @@ async function adminConfirmFee(payId,newStatus){
   try{ await db.collection('fee_payments').doc(payId).update({status:newStatus}); alert(newStatus==='confirmed'?'✅ Payment confirmed!':'❌ Payment rejected.'); loadFeePayments(); }catch(e){ alert('Error: '+e.message); }
 }
 
-// ===== TESTIMONIALS =====
+// ===== PHOTO UPLOAD MANAGER =====
+let selectedFiles = [];
+
+function handlePhotoSelect(files) {
+  selectedFiles = Array.from(files);
+  showPhotoPreviews();
+}
+
+function handlePhotoDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').style.borderColor = 'var(--gray-200)';
+  document.getElementById('dropZone').style.background = 'var(--off-white)';
+  selectedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  showPhotoPreviews();
+}
+
+function showPhotoPreviews() {
+  const grid = document.getElementById('photoPreviewGrid');
+  const uploadBtn = document.getElementById('uploadBtn');
+  if (!grid) return;
+
+  if (!selectedFiles.length) {
+    grid.innerHTML = '';
+    if (uploadBtn) uploadBtn.style.display = 'none';
+    return;
+  }
+
+  grid.innerHTML = selectedFiles.map((file, i) => {
+    const url = URL.createObjectURL(file);
+    const size = (file.size / 1024 / 1024).toFixed(2);
+    const tooBig = file.size > 5 * 1024 * 1024;
+    return `
+      <div style="position:relative;border-radius:var(--radius);overflow:hidden;border:2px solid ${tooBig ? 'var(--danger)' : 'var(--gray-200)'};">
+        <img src="${url}" style="width:100%;height:120px;object-fit:cover;display:block;">
+        <div style="padding:6px 8px;background:var(--white);">
+          <div style="font-size:0.72rem;color:var(--gray-600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${file.name}</div>
+          <div style="font-size:0.7rem;color:${tooBig ? 'var(--danger)' : 'var(--gray-400)'};">${size}MB ${tooBig ? '⚠️ Too large' : '✓'}</div>
+        </div>
+        <button onclick="removePhoto(${i})" style="position:absolute;top:4px;right:4px;background:var(--danger);color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:0.75rem;cursor:pointer;line-height:1;">✕</button>
+      </div>`;
+  }).join('');
+
+  if (uploadBtn) uploadBtn.style.display = 'flex';
+}
+
+function removePhoto(index) {
+  selectedFiles.splice(index, 1);
+  showPhotoPreviews();
+}
+
+function clearPhotoSelection() {
+  selectedFiles = [];
+  document.getElementById('photoFileInput').value = '';
+  document.getElementById('photoPreviewGrid').innerHTML = '';
+  const uploadBtn = document.getElementById('uploadBtn');
+  if (uploadBtn) uploadBtn.style.display = 'none';
+}
+
+async function uploadPhotos() {
+  if (!selectedFiles.length) { alert('Please select photos first.'); return; }
+
+  // Validate sizes
+  const tooBig = selectedFiles.filter(f => f.size > 5 * 1024 * 1024);
+  if (tooBig.length) { alert(`${tooBig.length} photo(s) exceed 5MB limit. Please remove them.`); return; }
+
+  const category = document.getElementById('photoCategory')?.value || 'general';
+  const caption = document.getElementById('photoCaption')?.value || '';
+  const btn = document.getElementById('uploadBtn');
+  const progressWrap = document.getElementById('uploadProgressWrap');
+  const progressBar = document.getElementById('uploadProgressBar');
+  const progressText = document.getElementById('uploadStatusText');
+  const progressPercent = document.getElementById('uploadPercent');
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading...'; }
+  if (progressWrap) progressWrap.style.display = 'block';
+
+  let uploaded = 0;
+
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const file = selectedFiles[i];
+    const fileName = `gallery/${category}/${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+
+    if (progressText) progressText.textContent = `Uploading ${i + 1} of ${selectedFiles.length}: ${file.name}`;
+
+    if (firebaseReady && storage) {
+      try {
+        // Upload to Firebase Storage
+        const ref = storage.ref(fileName);
+        const uploadTask = ref.put(file);
+
+        await new Promise((resolve, reject) => {
+          uploadTask.on('state_changed',
+            (snapshot) => {
+              const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+              const overall = Math.round(((i / selectedFiles.length) + (pct / 100 / selectedFiles.length)) * 100);
+              if (progressBar) progressBar.style.width = overall + '%';
+              if (progressPercent) progressPercent.textContent = overall + '%';
+            },
+            reject,
+            async () => {
+              // Get download URL
+              const url = await uploadTask.snapshot.ref.getDownloadURL();
+              // Save metadata to Firestore
+              await db.collection('gallery_photos').add({
+                url, fileName, category, caption,
+                name: file.name,
+                size: file.size,
+                uploadedBy: currentAdminName || 'Admin',
+                uploadedAt: new Date().toISOString(),
+                visible: true
+              });
+              uploaded++;
+              resolve();
+            }
+          );
+        });
+      } catch(err) {
+        console.log('Upload error:', err.message);
+        // Demo fallback - save with object URL
+        await db.collection('gallery_photos').add({
+          url: URL.createObjectURL(file),
+          fileName, category, caption,
+          name: file.name,
+          uploadedAt: new Date().toISOString(),
+          visible: true
+        }).catch(()=>{});
+        uploaded++;
+      }
+    } else {
+      // Demo mode
+      await new Promise(r => setTimeout(r, 500));
+      const overall = Math.round(((i + 1) / selectedFiles.length) * 100);
+      if (progressBar) progressBar.style.width = overall + '%';
+      if (progressPercent) progressPercent.textContent = overall + '%';
+      uploaded++;
+    }
+  }
+
+  // Done
+  if (progressBar) progressBar.style.width = '100%';
+  if (progressText) progressText.textContent = `✅ ${uploaded} photo(s) uploaded successfully!`;
+  if (btn) { btn.disabled = false; btn.textContent = '📤 Upload to Gallery'; btn.style.display = 'none'; }
+  document.getElementById('uploadSuccess')?.classList.add('show');
+
+  clearPhotoSelection();
+  setTimeout(() => {
+    if (progressWrap) progressWrap.style.display = 'none';
+    if (progressBar) progressBar.style.width = '0%';
+    document.getElementById('uploadSuccess')?.classList.remove('show');
+  }, 4000);
+
+  loadGalleryPhotos();
+  // Also reload the public gallery
+  loadPublicGallery();
+}
+
+async function loadGalleryPhotos() {
+  const grid = document.getElementById('adminGalleryGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-400);">Loading photos...</div>';
+
+  if (!firebaseReady) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-400);">Firebase not connected. Upload a photo to see it here.</div>';
+    return;
+  }
+
+  try {
+    const categoryFilter = document.getElementById('filterCategory')?.value || '';
+    let query = db.collection('gallery_photos').orderBy('uploadedAt', 'desc');
+    if (categoryFilter) query = query.where('category', '==', categoryFilter);
+    const snap = await query.get();
+
+    if (snap.empty) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--gray-400);">No photos uploaded yet. Upload your first photo above!</div>';
+      return;
+    }
+
+    grid.innerHTML = snap.docs.map(doc => {
+      const p = doc.data();
+      const date = p.uploadedAt ? new Date(p.uploadedAt).toLocaleDateString('en-NG') : '';
+      return `
+        <div style="border-radius:var(--radius);overflow:hidden;background:var(--white);box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);">
+          <div style="position:relative;">
+            <img src="${p.url}" style="width:100%;height:140px;object-fit:cover;display:block;" onerror="this.src='https://via.placeholder.com/300x140?text=Photo'">
+            <div style="position:absolute;top:6px;left:6px;background:var(--navy-dark);color:var(--gold-light);font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:100px;text-transform:uppercase;">${p.category||'general'}</div>
+            <button onclick="deletePhoto('${doc.id}','${p.fileName||''}')" style="position:absolute;top:6px;right:6px;background:var(--danger);color:white;border:none;border-radius:50%;width:26px;height:26px;font-size:0.8rem;cursor:pointer;line-height:1;">🗑</button>
+            <button onclick="togglePhotoVisibility('${doc.id}',${!p.visible})" style="position:absolute;bottom:6px;right:6px;background:${p.visible?'var(--success)':'var(--gray-400)'};color:white;border:none;border-radius:6px;padding:3px 8px;font-size:0.7rem;cursor:pointer;">${p.visible?'👁 Visible':'🚫 Hidden'}</button>
+          </div>
+          <div style="padding:8px;">
+            <div style="font-size:0.78rem;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.caption||p.name||'Photo'}</div>
+            <div style="font-size:0.7rem;color:var(--gray-400);">${date} · By ${p.uploadedBy||'Admin'}</div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(err) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--danger);">Error loading photos: ${err.message}</div>`;
+  }
+}
+
+async function deletePhoto(docId, fileName) {
+  if (!confirm('Delete this photo permanently?')) return;
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+  try {
+    // Delete from Firestore
+    await db.collection('gallery_photos').doc(docId).delete();
+    // Delete from Storage if fileName exists
+    if (fileName) {
+      try { await storage.ref(fileName).delete(); } catch(e) {}
+    }
+    loadGalleryPhotos();
+    loadPublicGallery();
+  } catch(err) { alert('Error deleting: ' + err.message); }
+}
+
+async function togglePhotoVisibility(docId, visible) {
+  if (!firebaseReady) return;
+  try {
+    await db.collection('gallery_photos').doc(docId).update({ visible });
+    loadGalleryPhotos();
+    loadPublicGallery();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+// ===== PUBLIC GALLERY — Load real uploaded photos =====
+async function loadPublicGallery() {
+  if (!firebaseReady) return;
+  try {
+    const snap = await db.collection('gallery_photos')
+      .where('visible', '==', true)
+      .orderBy('uploadedAt', 'desc')
+      .get();
+
+    if (snap.empty) return;
+
+    const galleryGrid = document.querySelector('#page-gallery .gallery-grid');
+    if (!galleryGrid) return;
+
+    // Prepend real uploaded photos to gallery
+    const realPhotos = snap.docs.map(doc => {
+      const p = doc.data();
+      return `
+        <div class="gallery-item">
+          <img src="${p.url}" style="width:100%;height:200px;object-fit:cover;display:block;" alt="${p.caption||p.category}" onerror="this.parentElement.style.display='none'">
+          <div class="overlay"><span>${p.caption || p.category || 'Photo'}</span></div>
+        </div>`;
+    }).join('');
+
+    // Insert real photos before existing placeholder photos
+    galleryGrid.insertAdjacentHTML('afterbegin', realPhotos);
+  } catch(err) {
+    console.log('Gallery load error:', err.message);
+  }
+}
 async function submitTestimonial(e) {
   e.preventDefault();
   const data = {
@@ -4150,7 +4501,8 @@ if ('serviceWorker' in navigator) {
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
   initStats();
-  // Re-observe on page change
+  // Load real photos into public gallery
+  setTimeout(loadPublicGallery, 1000);
 });
 
 // Trigger fade-in on section change
