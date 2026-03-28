@@ -2235,23 +2235,87 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
       </div>
 
       <!-- STUDENTS -->
+      <!-- STUDENTS MANAGEMENT -->
       <div class="dash-section" id="dash-students">
-        <div class="dash-header"><h2>Student Accounts</h2></div>
-        <div class="form-wrap" style="margin-bottom:2rem;">
-          <h3 class="form-title">Create Student Account</h3>
-          <p class="form-subtitle">Create login credentials for a student to access the student portal.</p>
-          <div class="form-grid">
-            <div class="form-group"><label>Full Name</label><input type="text" id="st_name" placeholder="Student full name"></div>
-            <div class="form-group"><label>Admission Number</label><input type="text" id="st_admno" placeholder="FER/2025/001"></div>
-            <div class="form-group"><label>Email</label><input type="email" id="st_email" placeholder="student@ferdew.edu.ng"></div>
-            <div class="form-group"><label>Password</label><input type="password" id="st_pass" placeholder="Temporary password"></div>
-            <div class="form-group"><label>Class</label><select id="st_class"><option>JSS 1</option><option>JSS 2</option><option>JSS 3</option><option>SSS 1</option><option>SSS 2</option><option>SSS 3</option></select></div>
-            <div class="form-group"><label>Gender</label><select id="st_gender"><option>Male</option><option>Female</option></select></div>
+        <div class="dash-header">
+          <h2>🎓 Student Management</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <select id="studentClassFilter" onchange="loadStudents()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
+              <option value="">All Classes</option>
+              <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
+              <option>SSS 1 Science</option><option>SSS 1 Arts</option><option>SSS 1 Commercial</option>
+              <option>SSS 2 Science</option><option>SSS 2 Arts</option><option>SSS 2 Commercial</option>
+              <option>SSS 3 Science</option><option>SSS 3 Arts</option><option>SSS 3 Commercial</option>
+            </select>
+            <button class="btn btn-sm btn-navy" onclick="loadStudents()">🔄 Refresh</button>
+            <button class="btn btn-sm btn-primary" onclick="openAddStudentModal()">➕ Add Student</button>
+            <button class="btn btn-sm" style="background:#6c5ce7;color:white;" onclick="seedSampleStudents()">🌱 Seed Sample Data</button>
           </div>
-          <button class="btn btn-primary btn-sm" style="margin-top:1rem" onclick="createStudentAccount()">Create Account</button>
-          <div class="form-success" id="stSuccess">✅ Student account created successfully!</div>
+        </div>
+
+        <!-- STUDENT STATS -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;" id="studentStats">
+          <div class="dash-card"><div class="num" id="totalStudentsCount">—</div><div class="lbl">Total Students</div></div>
+          <div class="dash-card"><div class="num" id="maleCount">—</div><div class="lbl">Male</div></div>
+          <div class="dash-card"><div class="num" id="femaleCount">—</div><div class="lbl">Female</div></div>
+          <div class="dash-card"><div class="num" id="classCount">—</div><div class="lbl">Classes</div></div>
+        </div>
+
+        <!-- SEARCH -->
+        <div style="margin-bottom:1rem;">
+          <input type="text" id="studentSearch" placeholder="🔍 Search by name or student ID..." oninput="filterStudentTable()" style="width:100%;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.875rem;">
+        </div>
+
+        <!-- STUDENTS TABLE -->
+        <div class="dash-table-wrap">
+          <table class="dash-table" id="studentsTable">
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Full Name</th>
+                <th>Gender</th>
+                <th>Class</th>
+                <th>Department</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">Click "Refresh" or "Seed Sample Data" to load students.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
+
+      <!-- STAFF MANAGEMENT -->
+      <div class="dash-section" id="dash-staff">
+        <div class="dash-header">
+          <h2>👩‍🏫 Staff Management</h2>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm btn-navy" onclick="loadStaffList()">🔄 Refresh</button>
+            <button class="btn btn-sm btn-primary" onclick="openAddStaffModal()">➕ Add Staff</button>
+          </div>
+        </div>
+
+        <!-- STAFF STATS -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem;">
+          <div class="dash-card"><div class="num" id="totalStaffCount">—</div><div class="lbl">Total Staff</div></div>
+          <div class="dash-card"><div class="num" id="teacherCount">—</div><div class="lbl">Teachers</div></div>
+          <div class="dash-card"><div class="num" id="adminStaffCount">—</div><div class="lbl">Admin Staff</div></div>
+        </div>
+
+        <!-- STAFF TABLE -->
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead>
+              <tr><th>Name</th><th>Role</th><th>Subject(s)</th><th>Phone</th><th>Portal Access</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="staffTableBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">Click "Refresh" to load staff.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
     </div><!-- end dashboard body flex -->
   </div><!-- end adminDash -->
@@ -3130,6 +3194,10 @@ const ROLE_PERMISSIONS = {
   'secretary':  ['overview','applications','news','gallery'],
   'teacher':    ['overview','attendance','students'],
   'housemaster':['overview','boarding','attendance'],
+  'bursar':     ['overview','feepayments'],
+  'secretary':  ['overview','applications','news','gallery'],
+  'teacher':    ['overview','attendance','students'],
+  'housemaster':['overview','boarding','attendance'],
 };
 
 const ROLE_LABELS = {
@@ -3347,6 +3415,10 @@ function switchDash(section) {
 function switchDashByName(section) {
   document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`dash-${section}`)?.classList.add('active');
+  // Auto-load data when switching to these sections
+  if (section === 'students') loadStudents();
+  if (section === 'staff') loadStaffList();
+  if (section === 'feepayments') loadFeePayments();
 }
 
 async function loadAdminData() {
@@ -3675,31 +3747,465 @@ async function addGalleryItem() {
   document.getElementById('gal_title').value='';
 }
 
-async function createStudentAccount() {
-  const name = document.getElementById('st_name').value;
-  const admNo = document.getElementById('st_admno').value;
-  const email = document.getElementById('st_email').value;
-  const pass = document.getElementById('st_pass').value;
-  const cls = document.getElementById('st_class').value;
-  const gender = document.getElementById('st_gender').value;
+// ===== STUDENT MANAGEMENT SYSTEM =====
 
-  if (!name || !admNo || !email || !pass) { alert('Please fill all required fields.'); return; }
+const SAMPLE_STUDENTS = [
+  // JSS 1
+  {name:'Adewale Ogundimu',gender:'Male',cls:'JSS 1',dept:''},
+  {name:'Fatima Abdullahi',gender:'Female',cls:'JSS 1',dept:''},
+  {name:'Emeka Okafor',gender:'Male',cls:'JSS 1',dept:''},
+  // JSS 2
+  {name:'Blessing Adeyemi',gender:'Female',cls:'JSS 2',dept:''},
+  {name:'Kunle Adesanya',gender:'Male',cls:'JSS 2',dept:''},
+  {name:'Ngozi Eze',gender:'Female',cls:'JSS 2',dept:''},
+  // JSS 3
+  {name:'Tunde Bakare',gender:'Male',cls:'JSS 3',dept:''},
+  {name:'Amina Yusuf',gender:'Female',cls:'JSS 3',dept:''},
+  {name:'Chukwudi Obi',gender:'Male',cls:'JSS 3',dept:''},
+  // SSS 1
+  {name:'Seun Olawale',gender:'Male',cls:'SSS 1',dept:'Science'},
+  {name:'Chioma Nwosu',gender:'Female',cls:'SSS 1',dept:'Science'},
+  {name:'Ibrahim Musa',gender:'Male',cls:'SSS 1',dept:'Arts'},
+  {name:'Yetunde Balogun',gender:'Female',cls:'SSS 1',dept:'Commercial'},
+  // SSS 2
+  {name:'David Adeleke',gender:'Male',cls:'SSS 2',dept:'Science'},
+  {name:'Aisha Mohammed',gender:'Female',cls:'SSS 2',dept:'Arts'},
+  {name:'Olumide Fashola',gender:'Male',cls:'SSS 2',dept:'Commercial'},
+  {name:'Chiamaka Igwe',gender:'Female',cls:'SSS 2',dept:'Science'},
+  // SSS 3
+  {name:'Babatunde Raji',gender:'Male',cls:'SSS 3',dept:'Science'},
+  {name:'Nkechi Okonkwo',gender:'Female',cls:'SSS 3',dept:'Arts'},
+  {name:'Abdulrazaq Sule',gender:'Male',cls:'SSS 3',dept:'Commercial'},
+];
 
-  const studentData = { name, admNo, email, class: cls, gender, type: 'Day Student', house: 'Blue House', createdAt: new Date().toISOString() };
+function generateStudentID(cls, index) {
+  const prefix = cls.replace(/\s+/g,'').toUpperCase().substring(0,4);
+  const year = new Date().getFullYear();
+  return `FER/${prefix}/${year}/${String(index).padStart(3,'0')}`;
+}
 
-  if (firebaseReady) {
-    try {
-      const userCred = await auth.createUserWithEmailAndPassword(email, pass);
-      await db.collection('students').doc(userCred.user.uid).set(studentData);
-      document.getElementById('stSuccess').classList.add('show');
-    } catch(err) {
-      alert('Error: ' + err.message);
+async function seedSampleStudents() {
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+  if (!confirm(`This will add ${SAMPLE_STUDENTS.length} sample Nigerian students to Firebase. Continue?`)) return;
+
+  try {
+    // Get existing students count per class
+    const snap = await db.collection('students_db').get();
+    const classCounts = {};
+    snap.docs.forEach(d => {
+      const c = d.data().cls || '';
+      classCounts[c] = (classCounts[c] || 0) + 1;
+    });
+
+    const batch = db.batch();
+    SAMPLE_STUDENTS.forEach(s => {
+      const count = (classCounts[s.cls] || 0) + 1;
+      classCounts[s.cls] = count;
+      const id = generateStudentID(s.cls, count);
+      const ref = db.collection('students_db').doc();
+      batch.set(ref, {
+        ...s,
+        studentId: id,
+        admNo: id,
+        house: ['Red House','Blue House','Green House','Yellow House'][Math.floor(Math.random()*4)],
+        type: Math.random() > 0.5 ? 'Day Student' : 'Boarding Student',
+        createdAt: new Date().toISOString()
+      });
+    });
+
+    await batch.commit();
+    alert(`✅ ${SAMPLE_STUDENTS.length} sample students added successfully!`);
+    loadStudents();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+async function loadStudents() {
+  const tbody = document.getElementById('studentsTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading students...</td></tr>';
+
+  if (!firebaseReady) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">Firebase not connected.</td></tr>'; return; }
+
+  try {
+    const snap = await db.collection('students_db').get();
+    const classFilter = document.getElementById('studentClassFilter')?.value || '';
+
+    let students = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (classFilter) {
+      students = students.filter(s => {
+        const fullClass = s.dept ? `${s.cls} ${s.dept}` : s.cls;
+        return fullClass === classFilter || s.cls === classFilter;
+      });
+    }
+    students.sort((a,b) => (a.cls||'').localeCompare(b.cls||'') || (a.name||'').localeCompare(b.name||''));
+
+    // Update stats
+    const allStudents = snap.docs.map(d => d.data());
+    document.getElementById('totalStudentsCount').textContent = allStudents.length;
+    document.getElementById('maleCount').textContent = allStudents.filter(s=>s.gender==='Male').length;
+    document.getElementById('femaleCount').textContent = allStudents.filter(s=>s.gender==='Female').length;
+    const uniqueClasses = new Set(allStudents.map(s=>s.cls));
+    document.getElementById('classCount').textContent = uniqueClasses.size;
+
+    if (!students.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">No students found. Click "Seed Sample Data" to add sample students.</td></tr>';
       return;
     }
-  } else {
-    // Demo mode
-    document.getElementById('stSuccess').classList.add('show');
+
+    tbody.innerHTML = students.map(s => `
+      <tr id="strow_${s.id}">
+        <td><code style="font-size:0.75rem;background:var(--gray-100);padding:2px 6px;border-radius:4px;">${s.studentId||s.admNo||'—'}</code></td>
+        <td><strong>${s.name||'—'}</strong></td>
+        <td><span style="background:${s.gender==='Male'?'#d1ecf1':'#fce4ec'};color:${s.gender==='Male'?'#0c5460':'#880e4f'};padding:2px 8px;border-radius:100px;font-size:0.75rem;font-weight:600;">${s.gender||'—'}</span></td>
+        <td>${s.cls||'—'}</td>
+        <td>${s.dept||'—'}</td>
+        <td>
+          <button onclick="openEditStudentModal('${s.id}')" style="background:var(--navy);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;margin-right:4px;">✏️ Edit</button>
+          <button onclick="deleteStudent('${s.id}')" style="background:var(--danger);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">🗑</button>
+        </td>
+      </tr>`).join('');
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);">Error: ${err.message}</td></tr>`;
   }
+}
+
+function filterStudentTable() {
+  const q = document.getElementById('studentSearch')?.value?.toLowerCase() || '';
+  document.querySelectorAll('#studentsTableBody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function openAddStudentModal() {
+  showStudentModal(null);
+}
+
+function openEditStudentModal(docId) {
+  showStudentModal(docId);
+}
+
+function showStudentModal(docId) {
+  const existing = document.getElementById('studentModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'studentModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;';
+  modal.innerHTML = `
+    <div style="background:var(--white);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+        <h3 style="font-size:1.1rem;color:var(--navy);">${docId ? '✏️ Edit Student' : '➕ Add New Student'}</h3>
+        <button onclick="document.getElementById('studentModal').remove()" style="background:var(--gray-100);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Full Name *</label><input type="text" id="sm_name" placeholder="e.g. Adewale Ogundimu"></div>
+        <div class="form-group"><label>Gender *</label>
+          <select id="sm_gender"><option>Male</option><option>Female</option></select>
+        </div>
+        <div class="form-group"><label>Class *</label>
+          <select id="sm_class" onchange="toggleDeptField()">
+            <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
+            <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
+          </select>
+        </div>
+        <div class="form-group" id="sm_dept_wrap">
+          <label>Department (SSS only)</label>
+          <select id="sm_dept">
+            <option value="">None</option>
+            <option>Science</option><option>Arts</option><option>Commercial</option>
+          </select>
+        </div>
+        <div class="form-group"><label>School Type</label>
+          <select id="sm_type"><option>Day Student</option><option>Boarding Student</option></select>
+        </div>
+        <div class="form-group"><label>House</label>
+          <select id="sm_house">
+            <option>Red House</option><option>Blue House</option><option>Green House</option><option>Yellow House</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Student ID</label>
+          <input type="text" id="sm_id" placeholder="Auto-generated" readonly style="background:var(--gray-100);cursor:not-allowed;">
+          <span style="font-size:0.75rem;color:var(--gray-400);">Auto-generated based on class</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:1.5rem;">
+        <button onclick="saveStudent('${docId||''}')" class="btn btn-primary" style="flex:1;">💾 ${docId?'Save Changes':'Add Student'}</button>
+        <button onclick="document.getElementById('studentModal').remove()" class="btn" style="background:var(--gray-100);color:var(--gray-800);">Cancel</button>
+      </div>
+      <div id="smSuccess" style="display:none;margin-top:1rem;background:#d4edda;color:#155724;padding:10px;border-radius:8px;font-size:0.875rem;">✅ Student saved!</div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  toggleDeptField();
+
+  // Load existing data if editing
+  if (docId && firebaseReady) {
+    db.collection('students_db').doc(docId).get().then(doc => {
+      if (doc.exists) {
+        const s = doc.data();
+        document.getElementById('sm_name').value = s.name || '';
+        document.getElementById('sm_gender').value = s.gender || 'Male';
+        document.getElementById('sm_class').value = s.cls || 'JSS 1';
+        document.getElementById('sm_dept').value = s.dept || '';
+        document.getElementById('sm_type').value = s.type || 'Day Student';
+        document.getElementById('sm_house').value = s.house || 'Blue House';
+        document.getElementById('sm_id').value = s.studentId || s.admNo || '';
+        toggleDeptField();
+      }
+    });
+  } else {
+    // Auto-generate ID for new student
+    generateNextStudentID();
+  }
+}
+
+function toggleDeptField() {
+  const cls = document.getElementById('sm_class')?.value || '';
+  const wrap = document.getElementById('sm_dept_wrap');
+  if (wrap) wrap.style.display = cls.includes('SSS') ? 'flex' : 'none';
+  if (!cls.includes('SSS')) {
+    const dept = document.getElementById('sm_dept');
+    if (dept) dept.value = '';
+  }
+  generateNextStudentID();
+}
+
+async function generateNextStudentID() {
+  const cls = document.getElementById('sm_class')?.value || 'JSS 1';
+  const idEl = document.getElementById('sm_id');
+  if (!idEl) return;
+  if (!firebaseReady) { idEl.value = generateStudentID(cls, 1); return; }
+  try {
+    const snap = await db.collection('students_db').where('cls','==',cls).get();
+    const nextNum = snap.size + 1;
+    idEl.value = generateStudentID(cls, nextNum);
+  } catch(e) { idEl.value = generateStudentID(cls, Math.floor(Math.random()*900)+100); }
+}
+
+async function saveStudent(docId) {
+  const name = document.getElementById('sm_name')?.value?.trim();
+  const gender = document.getElementById('sm_gender')?.value;
+  const cls = document.getElementById('sm_class')?.value;
+  const dept = document.getElementById('sm_dept')?.value || '';
+  const type = document.getElementById('sm_type')?.value;
+  const house = document.getElementById('sm_house')?.value;
+  const studentId = document.getElementById('sm_id')?.value;
+
+  if (!name) { alert('Please enter student name.'); return; }
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+
+  const data = { name, gender, cls, dept, type, house, studentId, admNo: studentId, updatedAt: new Date().toISOString() };
+
+  try {
+    if (docId) {
+      await db.collection('students_db').doc(docId).update(data);
+    } else {
+      data.createdAt = new Date().toISOString();
+      await db.collection('students_db').add(data);
+    }
+    document.getElementById('smSuccess').style.display = 'block';
+    setTimeout(() => { document.getElementById('studentModal')?.remove(); loadStudents(); }, 1500);
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+async function deleteStudent(docId) {
+  if (!confirm('Delete this student permanently?')) return;
+  if (!firebaseReady) return;
+  try {
+    await db.collection('students_db').doc(docId).delete();
+    loadStudents();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+// ===== STAFF MANAGEMENT SYSTEM =====
+async function loadStaffList() {
+  const tbody = document.getElementById('staffTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading staff...</td></tr>';
+  if (!firebaseReady) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">Firebase not connected.</td></tr>'; return; }
+
+  try {
+    const snap = await db.collection('staff').get();
+    const staffList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Update stats
+    document.getElementById('totalStaffCount').textContent = staffList.length;
+    document.getElementById('teacherCount').textContent = staffList.filter(s=>s.role==='Teacher').length;
+    document.getElementById('adminStaffCount').textContent = staffList.filter(s=>s.role!=='Teacher').length;
+
+    if (!staffList.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">No staff added yet. Click "Add Staff" to begin.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = staffList.map(s => `
+      <tr>
+        <td><strong>${s.name||'—'}</strong></td>
+        <td><span class="status-badge approved">${s.role||'Teacher'}</span></td>
+        <td>${s.subject||'—'}</td>
+        <td>${s.phone||'—'}</td>
+        <td><span style="background:${s.portalAccess?'#d4edda':'#f8d7da'};color:${s.portalAccess?'#155724':'#721c24'};font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:100px;">${s.portalAccess?'✅ Yes':'❌ No'}</span></td>
+        <td>
+          <button onclick="openEditStaffModal('${s.id}')" style="background:var(--navy);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;margin-right:4px;">✏️ Edit</button>
+          ${currentAdminRole === 'superadmin' ? `<button onclick="deleteStaffMember('${s.id}')" style="background:var(--danger);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">🗑</button>` : ''}
+        </td>
+      </tr>`).join('');
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);">Error: ${err.message}</td></tr>`;
+  }
+}
+
+function openAddStaffModal() { showStaffModal(null); }
+function openEditStaffModal(docId) { showStaffModal(docId); }
+
+function showStaffModal(docId) {
+  const existing = document.getElementById('staffModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'staffModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;';
+  modal.innerHTML = `
+    <div style="background:var(--white);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+        <h3 style="font-size:1.1rem;color:var(--navy);">${docId ? '✏️ Edit Staff' : '➕ Add Staff Member'}</h3>
+        <button onclick="document.getElementById('staffModal').remove()" style="background:var(--gray-100);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Full Name *</label><input type="text" id="sfm_name" placeholder="e.g. Mrs. Adunola Okafor"></div>
+        <div class="form-group"><label>Role *</label>
+          <select id="sfm_role">
+            <option>Teacher</option><option>Principal</option><option>Vice Principal</option>
+            <option>Bursar</option><option>Secretary</option><option>Housemaster</option>
+            <option>Housemistress</option><option>Counsellor</option><option>Librarian</option><option>Admin Staff</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Gender</label>
+          <select id="sfm_gender"><option>Female</option><option>Male</option></select>
+        </div>
+        <div class="form-group"><label>Subject(s)</label><input type="text" id="sfm_subject" placeholder="e.g. Mathematics, Physics"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="sfm_phone" placeholder="08XXXXXXXXX"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="sfm_email" placeholder="staff@ferdew.edu.ng"></div>
+        <div class="form-group"><label>Qualification</label><input type="text" id="sfm_qual" placeholder="e.g. B.Sc Education, M.Ed"></div>
+        <div class="form-group"><label>Portal Access</label>
+          <select id="sfm_access"><option value="false">No Portal Access</option><option value="true">Yes — Can Login</option></select>
+        </div>
+        ${currentAdminRole === 'superadmin' ? `
+        <div class="form-group full" style="background:var(--gold-pale);border-radius:var(--radius);padding:1rem;border:1px solid rgba(201,150,42,0.3);">
+          <label style="color:var(--navy);font-weight:700;">🔐 Admin Dashboard Access (Super Admin only)</label>
+          <select id="sfm_adminrole" style="margin-top:8px;">
+            <option value="">No Dashboard Access</option>
+            <option value="principal">🏫 Principal</option>
+            <option value="bursar">💰 Bursar</option>
+            <option value="secretary">📋 Secretary</option>
+            <option value="teacher">👨‍🏫 Teacher</option>
+            <option value="housemaster">🏠 Housemaster</option>
+          </select>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+            <input type="email" id="sfm_adminemail" placeholder="Login email">
+            <input type="password" id="sfm_adminpass" placeholder="Login password (min 6 chars)">
+          </div>
+          <div style="font-size:0.75rem;color:var(--gray-400);margin-top:6px;">Leave email/password blank if no dashboard access needed.</div>
+        </div>` : ''}
+      </div>
+      <div style="display:flex;gap:10px;margin-top:1.5rem;">
+        <button onclick="saveStaffMember('${docId||''}')" class="btn btn-primary" style="flex:1;">💾 ${docId?'Save Changes':'Add Staff'}</button>
+        <button onclick="document.getElementById('staffModal').remove()" class="btn" style="background:var(--gray-100);color:var(--gray-800);">Cancel</button>
+      </div>
+      <div id="sfmSuccess" style="display:none;margin-top:1rem;background:#d4edda;color:#155724;padding:10px;border-radius:8px;font-size:0.875rem;">✅ Staff member saved!</div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  // Load existing data if editing
+  if (docId && firebaseReady) {
+    db.collection('staff').doc(docId).get().then(doc => {
+      if (doc.exists) {
+        const s = doc.data();
+        document.getElementById('sfm_name').value = s.name || '';
+        document.getElementById('sfm_role').value = s.role || 'Teacher';
+        document.getElementById('sfm_gender').value = s.gender || 'Female';
+        document.getElementById('sfm_subject').value = s.subject || '';
+        document.getElementById('sfm_phone').value = s.phone || '';
+        document.getElementById('sfm_email').value = s.email || '';
+        document.getElementById('sfm_qual').value = s.qualification || '';
+        document.getElementById('sfm_access').value = String(s.portalAccess || false);
+        if (currentAdminRole === 'superadmin') {
+          const ar = document.getElementById('sfm_adminrole');
+          if (ar) ar.value = s.adminRole || '';
+        }
+      }
+    });
+  }
+}
+
+async function saveStaffMember(docId) {
+  const name = document.getElementById('sfm_name')?.value?.trim();
+  if (!name) { alert('Please enter staff name.'); return; }
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+
+  const data = {
+    name,
+    role: document.getElementById('sfm_role')?.value || 'Teacher',
+    gender: document.getElementById('sfm_gender')?.value || 'Female',
+    subject: document.getElementById('sfm_subject')?.value || '',
+    phone: document.getElementById('sfm_phone')?.value || '',
+    email: document.getElementById('sfm_email')?.value || '',
+    qualification: document.getElementById('sfm_qual')?.value || '',
+    portalAccess: document.getElementById('sfm_access')?.value === 'true',
+    updatedAt: new Date().toISOString()
+  };
+
+  // Super admin can assign dashboard role
+  if (currentAdminRole === 'superadmin') {
+    const adminRole = document.getElementById('sfm_adminrole')?.value || '';
+    const adminEmail = document.getElementById('sfm_adminemail')?.value?.trim() || '';
+    const adminPass = document.getElementById('sfm_adminpass')?.value?.trim() || '';
+    data.adminRole = adminRole;
+
+    // Create Firebase Auth account if email and password provided
+    if (adminRole && adminEmail && adminPass && adminPass.length >= 6 && !docId) {
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(adminEmail, adminPass);
+        await db.collection('admins').doc(cred.user.uid).set({
+          name, email: adminEmail, role: adminRole,
+          createdAt: new Date().toISOString(), createdBy: currentAdminName
+        });
+        data.adminUid = cred.user.uid;
+        // Re-sign in as super admin
+        await auth.signInWithEmailAndPassword('ferdew31@gmail.com', 'admin123').catch(()=>{});
+      } catch(e) { console.log('Auth create error:', e.message); }
+    }
+  }
+
+  try {
+    if (docId) {
+      await db.collection('staff').doc(docId).update(data);
+    } else {
+      data.createdAt = new Date().toISOString();
+      await db.collection('staff').add(data);
+    }
+    document.getElementById('sfmSuccess').style.display = 'block';
+    setTimeout(() => { document.getElementById('staffModal')?.remove(); loadStaffList(); }, 1500);
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+async function deleteStaffMember(docId) {
+  if (currentAdminRole !== 'superadmin') { alert('Only Super Admin can delete staff accounts.'); return; }
+  if (!confirm('Delete this staff member permanently?')) return;
+  try {
+    await db.collection('staff').doc(docId).delete();
+    loadStaffList();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+async function addStaff() {
+  // Legacy function — redirect to new system
+  openAddStaffModal();
+}
+
+async function createStudentAccount() {
+  // Legacy function — redirect to new system
+  openAddStudentModal();
 }
 
 // ===== STUDENT PORTAL =====
