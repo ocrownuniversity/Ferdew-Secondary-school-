@@ -1812,6 +1812,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         <div class="dash-nav-item active" data-section="overview" onclick="switchDash('overview')"><span class="icon">📊</span> Overview</div>
         <div class="dash-nav-item" data-section="applications" onclick="switchDash('applications')"><span class="icon">📋</span> Applications</div>
         <div class="dash-nav-item" data-section="boarding" onclick="switchDash('boarding')"><span class="icon">🏠</span> Boarding</div>
+        <div class="dash-nav-item" data-section="assignments" onclick="switchDash('assignments')"><span class="icon">📝</span> Assignments</div>
         <div class="dash-nav-item" data-section="feepayments" onclick="switchDash('feepayments')"><span class="icon">💳</span> Fee Payments</div>
         <div class="dash-nav-item" data-section="news" onclick="switchDash('news')"><span class="icon">📰</span> News Posts</div>
         <div class="dash-nav-item" data-section="gallery" onclick="switchDash('gallery')"><span class="icon">🖼️</span> Gallery</div>
@@ -2004,6 +2005,44 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <div class="form-success" id="galSuccess">✅ Gallery entry added!</div>
         </div>
         <div id="galleryList" style="display:flex;flex-wrap:wrap;gap:12px;"></div>
+      </div>
+
+      <!-- ASSIGNMENTS MANAGEMENT -->
+      <div class="dash-section" id="dash-assignments">
+        <div class="dash-header">
+          <h2>📝 Assignment Manager</h2>
+          <button class="btn btn-sm btn-primary" onclick="openCreateAssignmentModal()">➕ Create Assignment</button>
+        </div>
+
+        <!-- FILTER -->
+        <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <select id="assignClassFilter" onchange="loadAdminAssignments()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
+            <option value="">All Classes</option>
+            <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
+            <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
+          </select>
+          <select id="assignSubjectFilter" onchange="loadAdminAssignments()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
+            <option value="">All Subjects</option>
+            <option>Mathematics</option><option>English Language</option><option>Biology</option>
+            <option>Chemistry</option><option>Physics</option><option>Economics</option>
+            <option>Government</option><option>Literature</option><option>Geography</option>
+            <option>Accounting</option><option>Commerce</option><option>Civic Education</option>
+          </select>
+          <button class="btn btn-sm btn-navy" onclick="loadAdminAssignments()">🔄 Refresh</button>
+        </div>
+
+        <!-- STATS -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;">
+          <div class="dash-card"><div class="num" id="totalAssignments">—</div><div class="lbl">Total Assignments</div></div>
+          <div class="dash-card"><div class="num" id="totalSubmissions">—</div><div class="lbl">Submissions</div></div>
+          <div class="dash-card"><div class="num" id="pendingGrading">—</div><div class="lbl">Pending Grading</div></div>
+          <div class="dash-card"><div class="num" id="gradedCount">—</div><div class="lbl">Graded</div></div>
+        </div>
+
+        <!-- ASSIGNMENTS LIST -->
+        <div id="adminAssignmentsList" style="display:flex;flex-direction:column;gap:16px;">
+          <div style="text-align:center;padding:3rem;color:var(--gray-400);">Click "Refresh" to load assignments.</div>
+        </div>
       </div>
 
       <!-- FEE PAYMENTS -->
@@ -2354,7 +2393,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         </div>
         <button class="btn btn-navy btn-full" onclick="portalLogin()">Login to Portal</button>
         <div class="login-err" id="portalErr">Invalid admission number or password.</div>
-        <div style="margin-top:1rem;text-align:center;font-size:0.8rem;color:var(--gray-400);">Demo: <strong>FER/2025/001</strong> / password: <strong>student123</strong></div>
+        <div style="margin-top:1rem;text-align:center;font-size:0.8rem;color:var(--gray-400);">Use your <strong>Student ID</strong> and default password is your <strong>first name in lowercase</strong><br>Demo: <strong>FER/2025/001</strong> / <strong>student123</strong></div>
         <div style="margin-top:1rem;text-align:center;">
           <a href="https://wa.me/2348150898386" target="_blank" style="font-size:0.85rem;color:var(--navy);font-weight:600;">Forgot password? WhatsApp us →</a>
         </div>
@@ -2383,6 +2422,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
         <div class="portal-nav-item active" onclick="switchPortal('profile')">👤 My Profile</div>
         <div class="portal-nav-item" onclick="switchPortal('timetable')">📅 Timetable</div>
         <div class="portal-nav-item" onclick="switchPortal('results')">📊 Results <button onclick="generateReportCard()" style="float:right;background:var(--gold);border:none;color:var(--navy-dark);font-size:0.7rem;padding:2px 7px;border-radius:4px;cursor:pointer;">PDF</button></div>
+        <div class="portal-nav-item" onclick="switchPortal('assignments');loadStudentAssignments()">📝 Assignments <span id="assignBadge" style="display:none;background:var(--danger);color:white;font-size:0.65rem;padding:1px 6px;border-radius:100px;margin-left:4px;"></span></div>
         <div class="portal-nav-item" onclick="switchPortal('fees')" style="color:var(--gold);font-weight:700;">💳 Pay Fees</div>
         <div class="portal-nav-item" onclick="switchPortal('notices');markNoticesSeen()">📢 Notices <span id="noticeBadge" style="display:none;background:var(--danger);color:white;font-size:0.65rem;padding:1px 6px;border-radius:100px;margin-left:4px;"></span></div>
       </div>
@@ -2392,6 +2432,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <button onclick="switchPortal('profile')" class="btn btn-sm btn-navy" id="mob-profile">Profile</button>
           <button onclick="switchPortal('timetable')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-timetable">Timetable</button>
           <button onclick="switchPortal('results')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-results">Results</button>
+          <button onclick="switchPortal('assignments');loadStudentAssignments()" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-assignments">📝 Assignments</button>
           <button onclick="switchPortal('fees')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-fees">💳 Fees</button>
           <button onclick="switchPortal('notices')" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);" id="mob-notices">Notices</button>
         </div>
@@ -2608,6 +2649,63 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
             <h3 style="font-size:1.05rem;margin-bottom:1rem;">📜 Payment History</h3>
             <div id="feeHistoryList">
               <div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:0.875rem;background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);">No payment records yet.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ASSIGNMENTS -->
+        <div class="portal-section" id="portal-assignments">
+          <h2 style="font-size:1.3rem;margin-bottom:0.5rem;">📝 My Assignments</h2>
+          <p style="font-size:0.875rem;color:var(--gray-600);margin-bottom:1.5rem;">View assigned work, submit your answers, and check your scores and feedback.</p>
+
+          <!-- ASSIGNED WORK LIST -->
+          <div id="assignmentsList" style="display:flex;flex-direction:column;gap:16px;">
+            <div style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading assignments...</div>
+          </div>
+
+          <!-- SUBMIT ASSIGNMENT MODAL (shown inline) -->
+          <div id="submitAssignmentWrap" style="display:none;margin-top:2rem;">
+            <div class="form-wrap">
+              <h3 class="form-title" id="submitAssignTitle">Submit Assignment</h3>
+              <p class="form-subtitle" id="submitAssignSubject"></p>
+              <input type="hidden" id="currentAssignmentId">
+
+              <!-- SUBMISSION TYPE -->
+              <div style="display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
+                <button onclick="setSubmitType('text')" id="typeTextBtn" class="btn btn-sm btn-navy">✍️ Type Answer</button>
+                <button onclick="setSubmitType('file')" id="typeFileBtn" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);">📎 Upload File</button>
+                <button onclick="setSubmitType('image')" id="typeImageBtn" class="btn btn-sm" style="background:var(--gray-100);color:var(--gray-800);">🖼️ Image Link</button>
+              </div>
+
+              <!-- TEXT ANSWER -->
+              <div id="textAnswerWrap" class="form-group" style="margin-bottom:1rem;">
+                <label>Your Answer</label>
+                <textarea id="submitText" placeholder="Type your answer here..." style="min-height:150px;"></textarea>
+              </div>
+
+              <!-- FILE UPLOAD -->
+              <div id="fileUploadWrap" style="display:none;margin-bottom:1rem;">
+                <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:6px;">Upload File (PDF, DOCX, Image)</label>
+                <div onclick="document.getElementById('assignFileInput').click()" style="border:3px dashed var(--gray-200);border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;background:var(--off-white);">
+                  <div style="font-size:2rem;margin-bottom:0.5rem;">📎</div>
+                  <div style="font-size:0.875rem;color:var(--gray-600);">Tap to select file</div>
+                  <div id="selectedFileName" style="font-size:0.8rem;color:var(--gold);font-weight:600;margin-top:0.5rem;"></div>
+                </div>
+                <input type="file" id="assignFileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="handleAssignFile(this)">
+              </div>
+
+              <!-- IMAGE LINK -->
+              <div id="imageLinkWrap" style="display:none;margin-bottom:1rem;">
+                <label style="font-size:0.85rem;font-weight:600;color:var(--gray-800);display:block;margin-bottom:6px;">Image URL (from ImgBB)</label>
+                <div id="assignImgPreview" style="width:100%;height:150px;border-radius:var(--radius);background:var(--gray-100);border:2px dashed var(--gray-200);overflow:hidden;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;">🖼️</div>
+                <input type="url" id="submitImageUrl" placeholder="https://i.ibb.co/xxx/image.jpg" oninput="previewImg('assignImgPreview',this.value)">
+              </div>
+
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button onclick="submitAssignment()" class="btn btn-primary">📤 Submit Assignment</button>
+                <button onclick="closeSubmitForm()" class="btn" style="background:var(--gray-100);color:var(--gray-800);">Cancel</button>
+              </div>
+              <div class="form-success" id="submitSuccess">✅ Assignment submitted successfully! Your teacher will review and grade it soon.</div>
             </div>
           </div>
         </div>
@@ -3188,11 +3286,11 @@ async function submitContact(e) {
 // ===== ROLE-BASED ACCESS CONTROL =====
 // Roles and their allowed dashboard sections
 const ROLE_PERMISSIONS = {
-  'superadmin': ['overview','applications','boarding','feepayments','news','gallery','photos','staff','attendance','whatsapp','students','subadmins'],
-  'principal':  ['overview','applications','boarding','feepayments','news','gallery','photos','staff','attendance','students'],
+  'superadmin': ['overview','applications','boarding','feepayments','assignments','news','gallery','photos','staff','attendance','whatsapp','students','subadmins'],
+  'principal':  ['overview','applications','boarding','feepayments','assignments','news','gallery','photos','staff','attendance','students'],
   'bursar':     ['overview','feepayments'],
   'secretary':  ['overview','applications','news','gallery'],
-  'teacher':    ['overview','attendance','students'],
+  'teacher':    ['overview','attendance','students','assignments'],
   'housemaster':['overview','boarding','attendance'],
   'bursar':     ['overview','feepayments'],
   'secretary':  ['overview','applications','news','gallery'],
@@ -3419,6 +3517,7 @@ function switchDashByName(section) {
   if (section === 'students') loadStudents();
   if (section === 'staff') loadStaffList();
   if (section === 'feepayments') loadFeePayments();
+  if (section === 'assignments') loadAdminAssignments();
 }
 
 async function loadAdminData() {
@@ -3745,6 +3844,476 @@ async function addGalleryItem() {
   const list = document.getElementById('galleryList');
   list.insertAdjacentHTML('afterbegin', `<div style="background:var(--white);border-radius:var(--radius);padding:0.75rem 1rem;box-shadow:var(--shadow-sm);font-size:0.875rem;border:1px solid var(--gray-200);">📸 ${data.title} <span style="font-size:0.75rem;color:var(--gold);font-weight:600;">${data.category}</span></div>`);
   document.getElementById('gal_title').value='';
+}
+
+// ===== ASSIGNMENT SYSTEM =====
+
+let currentSubmitType = 'text';
+let assignFileBase64 = '';
+let assignFileName = '';
+
+// ---- STUDENT PORTAL: Load assignments ----
+async function loadStudentAssignments() {
+  const list = document.getElementById('assignmentsList');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading assignments...</div>';
+  if (!firebaseReady) { list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">Firebase not connected.</div>'; return; }
+
+  try {
+    const studentCls = feeState.cls || document.getElementById('profileClass')?.textContent || '';
+    const snap = await db.collection('assignments')
+      .where('visible', '==', true)
+      .get();
+
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(a => !a.cls || a.cls === studentCls || a.cls === 'All Classes')
+      .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+
+    if (!all.length) {
+      list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray-400);">No assignments yet. Check back later.</div>';
+      return;
+    }
+
+    // Get student's submissions
+    const studentId = feeState.admNo || document.getElementById('profileAdmNo')?.textContent || '';
+    const subSnap = await db.collection('submissions').where('studentId','==',studentId).get();
+    const mySubmissions = {};
+    subSnap.docs.forEach(d => { mySubmissions[d.data().assignmentId] = { id: d.id, ...d.data() }; });
+
+    // Check for new grades — show badge
+    const newGrades = Object.values(mySubmissions).filter(s => s.graded && !s.seenByStudent).length;
+    const badge = document.getElementById('assignBadge');
+    if (badge) { badge.style.display = newGrades > 0 ? 'inline-flex' : 'none'; if (newGrades > 0) badge.textContent = newGrades + ' new'; }
+
+    list.innerHTML = all.map(a => {
+      const sub = mySubmissions[a.id];
+      const deadline = a.deadline ? new Date(a.deadline).toLocaleDateString('en-NG', {day:'numeric',month:'short',year:'numeric'}) : 'No deadline';
+      const isOverdue = a.deadline && new Date(a.deadline) < new Date() && !sub;
+      const statusBadge = sub
+        ? sub.graded
+          ? `<span style="background:#d4edda;color:#155724;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">✅ Graded — ${sub.score}/${a.maxScore||100}</span>`
+          : `<span style="background:#fff3cd;color:#856404;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">⏳ Submitted — Awaiting Grade</span>`
+        : isOverdue
+          ? `<span style="background:#f8d7da;color:#721c24;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">⚠️ Overdue</span>`
+          : `<span style="background:#d1ecf1;color:#0c5460;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;">📋 Pending</span>`;
+
+      return `
+        <div style="background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-sm);border-left:4px solid ${sub?.graded?'var(--success)':sub?'var(--gold)':isOverdue?'var(--danger)':'var(--navy)'};">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:0.75rem;">
+            <div>
+              <h3 style="font-size:1rem;color:var(--navy);margin-bottom:4px;">${a.title||'Untitled'}</h3>
+              <div style="font-size:0.8rem;color:var(--gray-600);">📚 ${a.subject||'—'} &nbsp;|&nbsp; 🏫 ${a.cls||'All Classes'} &nbsp;|&nbsp; 📅 Due: ${deadline}</div>
+            </div>
+            ${statusBadge}
+          </div>
+          <p style="font-size:0.875rem;color:var(--gray-600);line-height:1.7;margin-bottom:1rem;">${a.description||''}</p>
+
+          ${sub?.graded ? `
+            <div style="background:linear-gradient(135deg,var(--navy-dark),var(--navy));border-radius:var(--radius);padding:1.25rem;color:var(--white);margin-bottom:1rem;">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:0.75rem;">
+                <div style="font-weight:700;color:var(--gold-light);">Teacher's Feedback</div>
+                <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:900;color:var(--gold-light);">${sub.score}/${a.maxScore||100} <span style="font-size:0.9rem;font-weight:400;">(${sub.grade||''})</span></div>
+              </div>
+              <p style="font-size:0.875rem;color:rgba(255,255,255,0.85);line-height:1.7;">${sub.feedback||'No feedback provided.'}</p>
+              <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:0.5rem;">Graded by ${sub.gradedBy||'Teacher'} on ${sub.gradedAt ? new Date(sub.gradedAt).toLocaleDateString('en-NG') : ''}</div>
+            </div>` : ''}
+
+          ${sub && !sub.graded ? `
+            <div style="background:var(--gold-pale);border-radius:var(--radius);padding:0.75rem 1rem;font-size:0.82rem;color:var(--gray-600);margin-bottom:1rem;">
+              ✅ Submitted on ${sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString('en-NG') : ''}. Waiting for teacher to grade.
+            </div>` : ''}
+
+          ${!sub ? `<button onclick="openSubmitForm('${a.id}','${(a.title||'').replace(/'/g,'`')}','${a.subject||''}')" class="btn btn-primary btn-sm">📤 Submit Assignment</button>` : ''}
+        </div>`;
+    }).join('');
+
+    // Mark grades as seen
+    Object.values(mySubmissions).filter(s => s.graded && !s.seenByStudent).forEach(s => {
+      db.collection('submissions').doc(s.id).update({ seenByStudent: true }).catch(()=>{});
+    });
+  } catch(err) {
+    list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--danger);">Error: ${err.message}</div>`;
+  }
+}
+
+function openSubmitForm(assignId, title, subject) {
+  document.getElementById('submitAssignmentWrap').style.display = 'block';
+  document.getElementById('submitAssignTitle').textContent = '📤 Submit: ' + title;
+  document.getElementById('submitAssignSubject').textContent = subject;
+  document.getElementById('currentAssignmentId').value = assignId;
+  document.getElementById('submitSuccess').classList.remove('show');
+  document.getElementById('submitText').value = '';
+  document.getElementById('submitImageUrl').value = '';
+  assignFileBase64 = ''; assignFileName = '';
+  document.getElementById('selectedFileName').textContent = '';
+  setSubmitType('text');
+  document.getElementById('submitAssignmentWrap').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function closeSubmitForm() {
+  document.getElementById('submitAssignmentWrap').style.display = 'none';
+}
+
+function setSubmitType(type) {
+  currentSubmitType = type;
+  document.getElementById('textAnswerWrap').style.display = type === 'text' ? 'block' : 'none';
+  document.getElementById('fileUploadWrap').style.display = type === 'file' ? 'block' : 'none';
+  document.getElementById('imageLinkWrap').style.display = type === 'image' ? 'block' : 'none';
+  ['typeTextBtn','typeFileBtn','typeImageBtn'].forEach((id,i) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const types = ['text','file','image'];
+    btn.style.background = types[i] === type ? 'var(--navy)' : 'var(--gray-100)';
+    btn.style.color = types[i] === type ? 'white' : 'var(--gray-800)';
+  });
+}
+
+async function handleAssignFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { alert('File too large. Max 10MB.'); return; }
+  assignFileName = file.name;
+  document.getElementById('selectedFileName').textContent = '✅ ' + file.name;
+
+  // Convert to base64 for storage
+  const reader = new FileReader();
+  reader.onload = (e) => { assignFileBase64 = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+async function submitAssignment() {
+  const assignId = document.getElementById('currentAssignmentId')?.value;
+  if (!assignId) { alert('No assignment selected.'); return; }
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+
+  const studentId = feeState.admNo || document.getElementById('profileAdmNo')?.textContent || 'DEMO';
+  const studentName = feeState.studentName || document.getElementById('profileName')?.textContent || 'Student';
+  const studentCls = document.getElementById('profileClass')?.textContent || '';
+
+  let submissionData = {
+    assignmentId: assignId,
+    studentId, studentName, studentCls,
+    submittedAt: new Date().toISOString(),
+    graded: false,
+    seenByStudent: false,
+    type: currentSubmitType
+  };
+
+  if (currentSubmitType === 'text') {
+    const text = document.getElementById('submitText')?.value?.trim();
+    if (!text) { alert('Please type your answer.'); return; }
+    submissionData.textAnswer = text;
+  } else if (currentSubmitType === 'file') {
+    if (!assignFileBase64) { alert('Please select a file first.'); return; }
+    // Upload to ImgBB if it's an image, otherwise store base64
+    if (assignFileName.match(/\.(jpg|jpeg|png|gif)$/i)) {
+      try {
+        const base64 = assignFileBase64.split(',')[1];
+        const fd = new FormData();
+        fd.append('image', base64);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method:'POST', body:fd });
+        const result = await res.json();
+        if (result.success) submissionData.fileUrl = result.data.display_url;
+        else submissionData.fileBase64 = assignFileBase64;
+      } catch(e) { submissionData.fileBase64 = assignFileBase64; }
+    } else {
+      submissionData.fileBase64 = assignFileBase64;
+    }
+    submissionData.fileName = assignFileName;
+  } else if (currentSubmitType === 'image') {
+    const url = document.getElementById('submitImageUrl')?.value?.trim();
+    if (!url || !url.startsWith('http')) { alert('Please enter a valid image URL.'); return; }
+    submissionData.imageUrl = url;
+  }
+
+  try {
+    // Check if already submitted
+    const existing = await db.collection('submissions')
+      .where('assignmentId','==',assignId)
+      .where('studentId','==',studentId)
+      .get();
+
+    if (!existing.empty) {
+      // Update existing submission
+      await db.collection('submissions').doc(existing.docs[0].id).update(submissionData);
+    } else {
+      await db.collection('submissions').add(submissionData);
+    }
+
+    // Notify teacher via Firestore notification
+    await db.collection('notifications').add({
+      type: 'new_submission',
+      assignmentId: assignId,
+      studentName, studentId, studentCls,
+      message: `${studentName} submitted an assignment`,
+      createdAt: new Date().toISOString(),
+      read: false,
+      for: 'teacher'
+    });
+
+    document.getElementById('submitSuccess').classList.add('show');
+    setTimeout(() => {
+      closeSubmitForm();
+      loadStudentAssignments();
+    }, 2000);
+  } catch(err) { alert('Error submitting: ' + err.message); }
+}
+
+// ---- ADMIN/TEACHER: Create Assignment ----
+function openCreateAssignmentModal() {
+  const existing = document.getElementById('createAssignModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'createAssignModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;';
+  modal.innerHTML = `
+    <div style="background:var(--white);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:550px;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+        <h3 style="font-size:1.1rem;color:var(--navy);">➕ Create New Assignment</h3>
+        <button onclick="document.getElementById('createAssignModal').remove()" style="background:var(--gray-100);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Assignment Title *</label><input type="text" id="ca_title" placeholder="e.g. Mathematics Assignment — Algebra"></div>
+        <div class="form-group"><label>Subject *</label>
+          <select id="ca_subject">
+            <option>Mathematics</option><option>English Language</option><option>Biology</option>
+            <option>Chemistry</option><option>Physics</option><option>Economics</option>
+            <option>Government</option><option>Literature in English</option><option>Geography</option>
+            <option>Financial Accounting</option><option>Commerce</option><option>Civic Education</option>
+            <option>Further Mathematics</option><option>Agricultural Science</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Class *</label>
+          <select id="ca_class">
+            <option value="All Classes">All Classes</option>
+            <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
+            <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Max Score</label><input type="number" id="ca_maxscore" value="100" min="1" max="100"></div>
+        <div class="form-group"><label>Deadline</label><input type="date" id="ca_deadline"></div>
+        <div class="form-group full"><label>Instructions / Description *</label><textarea id="ca_description" placeholder="Write the assignment instructions here..." style="min-height:120px;"></textarea></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:1.5rem;">
+        <button onclick="createAssignment()" class="btn btn-primary" style="flex:1;">📤 Publish Assignment</button>
+        <button onclick="document.getElementById('createAssignModal').remove()" class="btn" style="background:var(--gray-100);color:var(--gray-800);">Cancel</button>
+      </div>
+      <div id="caSuccess" style="display:none;margin-top:1rem;background:#d4edda;color:#155724;padding:10px;border-radius:8px;font-size:0.875rem;">✅ Assignment published! Students can now submit.</div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  // Set default deadline to 7 days from now
+  const d = new Date(); d.setDate(d.getDate() + 7);
+  document.getElementById('ca_deadline').value = d.toISOString().split('T')[0];
+}
+
+async function createAssignment() {
+  const title = document.getElementById('ca_title')?.value?.trim();
+  const subject = document.getElementById('ca_subject')?.value;
+  const cls = document.getElementById('ca_class')?.value;
+  const description = document.getElementById('ca_description')?.value?.trim();
+  const maxScore = parseInt(document.getElementById('ca_maxscore')?.value || '100');
+  const deadline = document.getElementById('ca_deadline')?.value;
+
+  if (!title || !description) { alert('Please fill title and description.'); return; }
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+
+  try {
+    await db.collection('assignments').add({
+      title, subject, cls, description, maxScore, deadline,
+      createdBy: currentAdminName || 'Admin',
+      createdAt: new Date().toISOString(),
+      visible: true
+    });
+
+    // Notify all students
+    await db.collection('notifications').add({
+      type: 'new_assignment',
+      title, subject, cls,
+      message: `New assignment: ${title} (${subject})`,
+      createdAt: new Date().toISOString(),
+      read: false,
+      for: 'student'
+    });
+
+    document.getElementById('caSuccess').style.display = 'block';
+    setTimeout(() => { document.getElementById('createAssignModal')?.remove(); loadAdminAssignments(); }, 1500);
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+// ---- ADMIN/TEACHER: View & Grade Submissions ----
+async function loadAdminAssignments() {
+  const list = document.getElementById('adminAssignmentsList');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading...</div>';
+  if (!firebaseReady) { list.innerHTML = '<div style="text-align:center;color:var(--danger);">Firebase not connected.</div>'; return; }
+
+  try {
+    const clsFilter = document.getElementById('assignClassFilter')?.value || '';
+    const subFilter = document.getElementById('assignSubjectFilter')?.value || '';
+
+    let snap = await db.collection('assignments').get();
+    let assignments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (clsFilter) assignments = assignments.filter(a => a.cls === clsFilter || a.cls === 'All Classes');
+    if (subFilter) assignments = assignments.filter(a => a.subject === subFilter);
+    assignments.sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+
+    // Get all submissions
+    const subSnap = await db.collection('submissions').get();
+    const allSubs = subSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Update stats
+    document.getElementById('totalAssignments').textContent = assignments.length;
+    document.getElementById('totalSubmissions').textContent = allSubs.length;
+    document.getElementById('pendingGrading').textContent = allSubs.filter(s => !s.graded).length;
+    document.getElementById('gradedCount').textContent = allSubs.filter(s => s.graded).length;
+
+    if (!assignments.length) {
+      list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray-400);">No assignments yet. Create one above!</div>';
+      return;
+    }
+
+    list.innerHTML = assignments.map(a => {
+      const subs = allSubs.filter(s => s.assignmentId === a.id);
+      const graded = subs.filter(s => s.graded).length;
+      const deadline = a.deadline ? new Date(a.deadline).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}) : 'No deadline';
+
+      return `
+        <div style="background:var(--white);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:1rem;">
+            <div>
+              <h3 style="font-size:1rem;color:var(--navy);margin-bottom:4px;">${a.title||'Untitled'}</h3>
+              <div style="font-size:0.8rem;color:var(--gray-600);">📚 ${a.subject||'—'} &nbsp;|&nbsp; 🏫 ${a.cls||'All'} &nbsp;|&nbsp; 📅 Due: ${deadline} &nbsp;|&nbsp; Max: ${a.maxScore||100} marks</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <span style="background:#d1ecf1;color:#0c5460;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:100px;">${subs.length} Submitted</span>
+              <span style="background:#d4edda;color:#155724;font-size:0.75rem;font-weight:700;padding:3px 10px;border-radius:100px;">${graded} Graded</span>
+              <button onclick="deleteAssignment('${a.id}')" style="background:var(--danger);color:white;border:none;padding:3px 10px;border-radius:100px;font-size:0.72rem;cursor:pointer;">🗑 Delete</button>
+            </div>
+          </div>
+          <p style="font-size:0.82rem;color:var(--gray-600);margin-bottom:1rem;line-height:1.6;">${(a.description||'').substring(0,150)}${(a.description||'').length>150?'...':''}</p>
+
+          <!-- SUBMISSIONS -->
+          ${subs.length ? `
+            <div style="border-top:1px solid var(--gray-200);padding-top:1rem;">
+              <h4 style="font-size:0.875rem;font-weight:700;color:var(--navy);margin-bottom:0.75rem;">Student Submissions (${subs.length})</h4>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                ${subs.map(sub => `
+                  <div style="background:var(--off-white);border-radius:var(--radius);padding:1rem;border-left:3px solid ${sub.graded?'var(--success)':'var(--gold)'};">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:0.5rem;">
+                      <div>
+                        <strong style="font-size:0.875rem;">${sub.studentName||'Student'}</strong>
+                        <span style="font-size:0.75rem;color:var(--gray-400);margin-left:8px;">${sub.studentCls||''} · ${sub.submittedAt?new Date(sub.submittedAt).toLocaleDateString('en-NG'):''}</span>
+                      </div>
+                      ${sub.graded
+                        ? `<span style="background:#d4edda;color:#155724;font-size:0.72rem;font-weight:700;padding:2px 10px;border-radius:100px;">✅ ${sub.score}/${a.maxScore||100} — ${sub.grade}</span>`
+                        : `<span style="background:#fff3cd;color:#856404;font-size:0.72rem;font-weight:700;padding:2px 10px;border-radius:100px;">⏳ Awaiting Grade</span>`}
+                    </div>
+
+                    <!-- SUBMISSION CONTENT -->
+                    ${sub.textAnswer ? `<div style="background:var(--white);border-radius:6px;padding:0.75rem;font-size:0.82rem;color:var(--gray-600);line-height:1.7;margin-bottom:0.75rem;border:1px solid var(--gray-200);">${sub.textAnswer.substring(0,300)}${sub.textAnswer.length>300?'...':''}</div>` : ''}
+                    ${sub.fileUrl || sub.imageUrl ? `<div style="margin-bottom:0.75rem;"><img src="${sub.fileUrl||sub.imageUrl}" style="max-width:200px;border-radius:8px;border:1px solid var(--gray-200);" onerror="this.style.display='none'"><br><a href="${sub.fileUrl||sub.imageUrl}" target="_blank" style="font-size:0.8rem;color:var(--navy);">View Full Submission ↗</a></div>` : ''}
+                    ${sub.fileName && !sub.fileUrl ? `<div style="font-size:0.8rem;color:var(--gray-600);margin-bottom:0.75rem;">📎 File: ${sub.fileName}</div>` : ''}
+
+                    <!-- GRADING FORM -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:8px;align-items:center;flex-wrap:wrap;">
+                      <input type="number" id="score_${sub.id}" value="${sub.score||''}" placeholder="Score" min="0" max="${a.maxScore||100}" style="padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.82rem;" onchange="autoGrade('${sub.id}',${a.maxScore||100})">
+                      <input type="text" id="grade_${sub.id}" value="${sub.grade||''}" placeholder="Grade" readonly style="padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.82rem;background:var(--gray-100);">
+                      <input type="text" id="feedback_${sub.id}" value="${sub.feedback||''}" placeholder="Teacher feedback..." style="padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.82rem;">
+                      <button onclick="gradeSubmission('${sub.id}','${sub.studentId}','${a.id}',${a.maxScore||100})" style="background:var(--success);color:white;border:none;padding:7px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;font-weight:600;white-space:nowrap;">✅ Grade</button>
+                    </div>
+                  </div>`).join('')}
+              </div>
+            </div>` : `<div style="font-size:0.82rem;color:var(--gray-400);border-top:1px solid var(--gray-200);padding-top:1rem;">No submissions yet for this assignment.</div>`}
+        </div>`;
+    }).join('');
+  } catch(err) {
+    list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--danger);">Error: ${err.message}</div>`;
+  }
+}
+
+function autoGrade(subId, maxScore) {
+  const score = parseInt(document.getElementById(`score_${subId}`)?.value || '0');
+  const pct = (score / maxScore) * 100;
+  let grade = 'F';
+  if (pct >= 70) grade = 'A';
+  else if (pct >= 60) grade = 'B';
+  else if (pct >= 50) grade = 'C';
+  else if (pct >= 40) grade = 'D';
+  const gradeEl = document.getElementById(`grade_${subId}`);
+  if (gradeEl) gradeEl.value = grade;
+}
+
+async function gradeSubmission(subId, studentId, assignId, maxScore) {
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+  const score = parseInt(document.getElementById(`score_${subId}`)?.value);
+  const feedback = document.getElementById(`feedback_${subId}`)?.value?.trim() || '';
+  if (isNaN(score) || score < 0 || score > maxScore) { alert(`Please enter a valid score (0-${maxScore}).`); return; }
+
+  const pct = (score / maxScore) * 100;
+  let grade = 'F';
+  if (pct >= 70) grade = 'A';
+  else if (pct >= 60) grade = 'B';
+  else if (pct >= 50) grade = 'C';
+  else if (pct >= 40) grade = 'D';
+
+  try {
+    await db.collection('submissions').doc(subId).update({
+      score, grade, feedback,
+      graded: true,
+      seenByStudent: false,
+      gradedBy: currentAdminName || 'Teacher',
+      gradedAt: new Date().toISOString()
+    });
+
+    // Notify student
+    await db.collection('notifications').add({
+      type: 'assignment_graded',
+      studentId,
+      assignmentId: assignId,
+      score, grade,
+      message: `Your assignment has been graded: ${score}/${maxScore} (${grade})`,
+      createdAt: new Date().toISOString(),
+      read: false,
+      for: 'student'
+    });
+
+    alert(`✅ Graded! Score: ${score}/${maxScore} (${grade})`);
+    loadAdminAssignments();
+  } catch(err) { alert('Error grading: ' + err.message); }
+}
+
+async function deleteAssignment(assignId) {
+  if (!confirm('Delete this assignment and all its submissions permanently?')) return;
+  if (!firebaseReady) return;
+  try {
+    await db.collection('assignments').doc(assignId).delete();
+    // Delete all submissions for this assignment
+    const subs = await db.collection('submissions').where('assignmentId','==',assignId).get();
+    const batch = db.batch();
+    subs.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    loadAdminAssignments();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
+// Check for student notifications on portal load
+async function checkAssignmentNotifications() {
+  if (!firebaseReady) return;
+  try {
+    const studentId = feeState.admNo || document.getElementById('profileAdmNo')?.textContent || '';
+    if (!studentId) return;
+    const snap = await db.collection('notifications')
+      .where('for','==','student')
+      .where('studentId','==',studentId)
+      .where('read','==',false)
+      .get();
+    if (!snap.empty) {
+      const badge = document.getElementById('assignBadge');
+      if (badge) { badge.style.display = 'inline-flex'; badge.textContent = snap.size; }
+    }
+  } catch(e) {}
 }
 
 // ===== STUDENT MANAGEMENT SYSTEM =====
@@ -4220,31 +4789,76 @@ const DEMO_STUDENT = {
 };
 const DEMO_PASS = 'student123';
 
-function portalLogin() {
-  const admNo = document.getElementById('portalAdmNo').value.trim();
+async function portalLogin() {
+  const studentId = document.getElementById('portalAdmNo').value.trim();
   const pass = document.getElementById('portalPass').value.trim();
   const err = document.getElementById('portalErr');
+  const btn = document.querySelector('#portalLogin .btn-navy');
+  if (btn) { btn.textContent = 'Logging in...'; btn.disabled = true; }
 
   // Demo login
-  if (admNo === DEMO_STUDENT.admNo && pass === DEMO_PASS) {
+  if (studentId === DEMO_STUDENT.admNo && pass === DEMO_PASS) {
     loadPortal(DEMO_STUDENT);
     err.classList.remove('show');
+    if (btn) { btn.textContent = 'Login to Portal'; btn.disabled = false; }
     return;
   }
 
-  // Firebase login
+  // Firebase student lookup by studentId
   if (firebaseReady) {
-    auth.signInWithEmailAndPassword(admNo + '@ferdew.edu.ng', pass)
-      .then(async (cred) => {
-        const doc = await db.collection('students').doc(cred.user.uid).get();
-        if (doc.exists) loadPortal(doc.data());
-        else loadPortal({ name:'Student', admNo, class:'SSS1', gender:'', type:'Day Student', house:'Blue House' });
-        err.classList.remove('show');
-      })
-      .catch(() => err.classList.add('show'));
+    try {
+      const snap = await db.collection('students_db')
+        .where('studentId','==',studentId)
+        .get();
+
+      if (!snap.empty) {
+        const studentData = { id: snap.docs[0].id, ...snap.docs[0].data() };
+        // Check password — default is first name lowercase or set password
+        const defaultPass = (studentData.name||'').split(' ')[0].toLowerCase();
+        const storedPass = studentData.password || defaultPass;
+
+        if (pass === storedPass) {
+          // Map fields correctly
+          const student = {
+            name: studentData.name || 'Student',
+            admNo: studentData.studentId || studentId,
+            class: studentData.cls || studentData.class || 'SSS 1',
+            cls: studentData.cls || '',
+            dept: studentData.dept || '',
+            gender: studentData.gender || '—',
+            type: studentData.type || 'Day Student',
+            house: studentData.house || 'Blue House',
+            email: studentData.email || '',
+            docId: studentData.id
+          };
+          loadPortal(student);
+          err.classList.remove('show');
+        } else {
+          err.textContent = 'Incorrect password. Default password is your first name in lowercase.';
+          err.classList.add('show');
+        }
+      } else {
+        // Try Firebase Auth as fallback
+        try {
+          const cred = await auth.signInWithEmailAndPassword(studentId + '@ferdew.edu.ng', pass);
+          const doc = await db.collection('students').doc(cred.user.uid).get();
+          if (doc.exists) loadPortal(doc.data());
+          else loadPortal({ name:'Student', admNo:studentId, class:'SSS 1', gender:'', type:'Day Student', house:'Blue House' });
+          err.classList.remove('show');
+        } catch(e2) {
+          err.textContent = 'Student ID not found. Please check your ID and try again.';
+          err.classList.add('show');
+        }
+      }
+    } catch(e) {
+      err.textContent = 'Login error: ' + e.message;
+      err.classList.add('show');
+    }
   } else {
+    err.textContent = 'System not connected. Try demo: FER/2025/001 / student123';
     err.classList.add('show');
   }
+  if (btn) { btn.textContent = 'Login to Portal'; btn.disabled = false; }
 }
 
 function loadPortal(student) {
@@ -4261,9 +4875,13 @@ function loadPortal(student) {
   document.getElementById('profileType').textContent = student.type;
   document.getElementById('profileHouse').textContent = student.house;
   // Init fees
-  initFees(student.class, student.email || '', student.name, student.admNo);
-  // Check for new notices
+  initFees(student.class || student.cls, student.email || '', student.name, student.admNo || student.studentId);
+  feeState.cls = student.class || student.cls || '';
+  // Check for new notices and assignments
   setTimeout(checkNewNotices, 500);
+  setTimeout(checkAssignmentNotifications, 800);
+  // Load assignments in background
+  setTimeout(loadStudentAssignments, 1000);
 }
 
 function portalLogout() {
