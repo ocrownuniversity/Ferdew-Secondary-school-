@@ -2643,57 +2643,110 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
             </div>
           </div>
 
-          <!-- ADD SCORE MANUALLY -->
+          <!-- SCORE ENTRY FORM -->
           <div class="form-wrap" style="margin-bottom:1.5rem;">
-            <h3 class="form-title">📝 Record Score (Test/Exam/CA)</h3>
-            <div class="form-grid">
-              <div class="form-group"><label>Student ID</label><input type="text" id="sc_studentId" placeholder="e.g. FER/JSS1/2025/001"></div>
-              <div class="form-group"><label>Student Name</label><input type="text" id="sc_studentName" placeholder="Auto-fills on lookup" readonly style="background:var(--gray-100);"></div>
-              <div class="form-group"><label>Subject *</label>
-                <select id="sc_subject">
-                  <option>Mathematics</option><option>English Language</option><option>Biology</option>
-                  <option>Chemistry</option><option>Physics</option><option>Economics</option>
-                  <option>Government</option><option>Literature in English</option><option>Geography</option>
-                  <option>Financial Accounting</option><option>Commerce</option><option>Civic Education</option>
-                </select>
+            <h3 class="form-title">📝 Enter Student Scores</h3>
+            <p class="form-subtitle">Enter Assignment, Test, and Exam scores per subject. Total and Grade calculate automatically.</p>
+
+            <!-- STEP 1: SELECT STUDENT -->
+            <div style="background:var(--gold-pale);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;border:1px solid rgba(201,150,42,0.3);">
+              <div style="font-weight:700;font-size:0.85rem;color:var(--navy);margin-bottom:0.75rem;">Step 1 — Select Student</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="text" id="sc_studentId" placeholder="Student ID e.g. FER/JSS1/2025/001" style="flex:1;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.85rem;">
+                <button onclick="lookupStudentForScore()" style="background:var(--navy);color:white;border:none;padding:8px 16px;border-radius:8px;font-size:0.85rem;cursor:pointer;font-weight:600;">🔍 Find Student</button>
               </div>
-              <div class="form-group"><label>Type *</label>
-                <select id="sc_type">
-                  <option value="CA">CA (Continuous Assessment)</option>
-                  <option value="test">Class Test</option>
-                  <option value="exam">Exam</option>
-                  <option value="assignment">Assignment</option>
-                  <option value="project">Project</option>
-                </select>
+              <div id="studentFoundCard" style="display:none;margin-top:0.75rem;background:var(--white);border-radius:8px;padding:0.75rem 1rem;border:1.5px solid var(--success);">
+                <div style="font-weight:700;color:var(--navy);" id="sc_studentName"></div>
+                <div style="font-size:0.78rem;color:var(--gray-400);" id="sc_studentInfo"></div>
               </div>
-              <div class="form-group"><label>Score *</label><input type="number" id="sc_score" placeholder="e.g. 75" min="0" max="100"></div>
-              <div class="form-group"><label>Max Score</label><input type="number" id="sc_maxscore" value="100" min="1"></div>
-              <div class="form-group"><label>Term</label>
+            </div>
+
+            <!-- STEP 2: SELECT TERM -->
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label>Term *</label>
                 <select id="sc_term">
                   <option>First Term 2025/2026</option>
                   <option>Second Term 2025/2026</option>
                   <option>Third Term 2025/2026</option>
                 </select>
               </div>
-              <div class="form-group"><label>Remark</label><input type="text" id="sc_remark" placeholder="e.g. Excellent, Good..."></div>
+              <div class="form-group" style="flex:1;">
+                <label>Subject *</label>
+                <select id="sc_subject">
+                  <option>Mathematics</option><option>English Language</option><option>Biology</option>
+                  <option>Chemistry</option><option>Physics</option><option>Economics</option>
+                  <option>Government</option><option>Literature in English</option><option>Geography</option>
+                  <option>Financial Accounting</option><option>Commerce</option><option>Civic Education</option>
+                  <option>Further Mathematics</option><option>Agricultural Science</option>
+                  <option>Computer Science</option><option>Fine Arts</option><option>Physical Education</option>
+                </select>
+              </div>
             </div>
-            <div style="display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap;">
-              <button class="btn btn-sm btn-navy" onclick="lookupStudent()">🔍 Lookup Student</button>
-              <button class="btn btn-primary btn-sm" onclick="recordScore()">💾 Record Score</button>
+
+            <!-- STEP 3: ENTER SCORES -->
+            <div style="background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;">
+              <div style="font-weight:700;font-size:0.85rem;color:var(--navy);margin-bottom:0.75rem;">Step 2 — Enter Scores (Max: Assignment 30 | Test 20 | Exam 50)</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;align-items:end;">
+                <div>
+                  <label style="font-size:0.75rem;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;">Assignment (/30)</label>
+                  <input type="number" id="sc_assignment" placeholder="0" min="0" max="30" oninput="calcScoreTotal()"
+                    style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.875rem;text-align:center;">
+                </div>
+                <div>
+                  <label style="font-size:0.75rem;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;">Test (/20)</label>
+                  <input type="number" id="sc_test" placeholder="0" min="0" max="20" oninput="calcScoreTotal()"
+                    style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.875rem;text-align:center;">
+                </div>
+                <div>
+                  <label style="font-size:0.75rem;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;">Exam (/50)</label>
+                  <input type="number" id="sc_exam" placeholder="0" min="0" max="50" oninput="calcScoreTotal()"
+                    style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.875rem;text-align:center;">
+                </div>
+                <div>
+                  <label style="font-size:0.75rem;font-weight:600;color:var(--navy);display:block;margin-bottom:4px;">Total (/100)</label>
+                  <input type="number" id="sc_total" readonly
+                    style="width:100%;padding:8px 10px;border:2px solid var(--navy);border-radius:8px;font-size:0.875rem;text-align:center;background:var(--gray-100);font-weight:700;">
+                </div>
+                <div>
+                  <label style="font-size:0.75rem;font-weight:600;color:var(--navy);display:block;margin-bottom:4px;">Grade</label>
+                  <input type="text" id="sc_grade" readonly
+                    style="width:100%;padding:8px 10px;border:2px solid var(--gold);border-radius:8px;font-size:1rem;text-align:center;background:var(--gold-pale);font-weight:900;color:var(--navy);">
+                </div>
+              </div>
+              <div style="margin-top:0.75rem;">
+                <label style="font-size:0.75rem;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;">Remark (Optional)</label>
+                <input type="text" id="sc_remark" placeholder="e.g. Excellent work, needs improvement in algebra..."
+                  style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.85rem;">
+              </div>
             </div>
-            <div class="form-success" id="scoreSuccess">✅ Score recorded successfully!</div>
+
+            <button class="btn btn-primary" onclick="recordSubjectScore()" style="width:100%;">💾 Save Score for This Subject</button>
+            <div class="form-success" id="scoreSuccess">✅ Score recorded! Student can now see it in their Results dashboard.</div>
           </div>
 
-          <!-- SCORES TABLE -->
+          <!-- SCORES TABLE - view recorded scores -->
           <div class="dash-table-wrap">
-            <h3 style="margin-bottom:1rem;">All Recorded Scores</h3>
-            <div id="scoresTableWrap" style="overflow-x:auto;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1rem;">
+              <h3>All Recorded Scores</h3>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="text" id="scoreSearchInput" placeholder="Search student..." oninput="filterScoreTable()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
+                <select id="scoreTermFilter" onchange="loadScoreRecords()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
+                  <option value="">All Terms</option>
+                  <option>First Term 2025/2026</option>
+                  <option>Second Term 2025/2026</option>
+                  <option>Third Term 2025/2026</option>
+                </select>
+                <button class="btn btn-sm btn-navy" onclick="loadScoreRecords()">🔄 Refresh</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
               <table class="dash-table" id="scoresTable">
                 <thead>
-                  <tr><th>Student</th><th>Subject</th><th>Type</th><th>Score</th><th>Grade</th><th>Term</th><th>Date</th><th>Action</th></tr>
+                  <tr><th>Student</th><th>Subject</th><th>Assignment</th><th>Test</th><th>Exam</th><th>Total</th><th>Grade</th><th>Term</th><th>Action</th></tr>
                 </thead>
                 <tbody id="scoresTableBody">
-                  <tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:2rem;">Select class and subject then click Refresh.</td></tr>
+                  <tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:2rem;">Click Refresh to load scores.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -2866,22 +2919,16 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
                 <option value="Third Term 2025/2026">Third Term 2025/2026</option>
               </select>
               <button onclick="loadStudentResults()" style="background:var(--navy);color:white;border:none;padding:7px 14px;border-radius:8px;font-size:0.82rem;cursor:pointer;">🔄 Refresh</button>
-              <button onclick="generateReportCard()" style="background:var(--gold);color:var(--navy-dark);border:none;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;">📄 Download PDF</button>
+              <button onclick="generateReportCard()" style="background:var(--gold);color:var(--navy-dark);border:none;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;">📄 PDF</button>
             </div>
           </div>
-
-          <!-- RESULTS TABLE -->
           <div id="resultsTableWrap" style="overflow-x:auto;">
             <div style="text-align:center;padding:3rem;color:var(--gray-400);">⏳ Loading your results...</div>
           </div>
-
-          <!-- SUMMARY CARDS -->
           <div id="resultsSummary" style="margin-top:1.5rem;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;"></div>
-
-          <!-- ASSIGNMENT SCORES -->
           <div style="margin-top:1.5rem;" id="assignmentScoresWrap">
-            <h3 style="font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:1rem;">📝 Assignment Scores</h3>
-            <div id="assignmentScoresList"></div>
+            <h3 style="font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:1rem;">📝 Graded Assignments</h3>
+            <div id="assignmentScoresList"><div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:0.82rem;">No graded assignments yet.</div></div>
           </div>
         </div>
 
@@ -4954,7 +5001,154 @@ function autoGrade(subId, maxScore) {
   gradeEl.value = grade;
 }
 
-// ===== STUDENT RESULTS — Load real scores from Firebase =====
+// ===== SCORE CALCULATOR =====
+function calcScoreTotal() {
+  const a = parseFloat(document.getElementById('sc_assignment')?.value) || 0;
+  const t = parseFloat(document.getElementById('sc_test')?.value) || 0;
+  const e = parseFloat(document.getElementById('sc_exam')?.value) || 0;
+  const total = a + t + e;
+  const grade = total >= 70 ? 'A' : total >= 60 ? 'B' : total >= 50 ? 'C' : total >= 40 ? 'D' : 'F';
+  const totalEl = document.getElementById('sc_total');
+  const gradeEl = document.getElementById('sc_grade');
+  if (totalEl) totalEl.value = total;
+  if (gradeEl) {
+    gradeEl.value = grade;
+    gradeEl.style.color = grade==='A'?'#155724':grade==='B'?'#0c5460':grade==='C'?'#856404':grade==='D'?'#a05c00':'#721c24';
+    gradeEl.style.borderColor = grade==='A'?'var(--success)':grade==='B'?'#17a2b8':grade==='C'?'#ffc107':'var(--danger)';
+  }
+}
+
+// ===== LOOKUP STUDENT =====
+async function lookupStudentForScore() {
+  const studentId = document.getElementById('sc_studentId')?.value?.trim();
+  if (!studentId) { alert('Please enter a Student ID.'); return; }
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+  try {
+    const snap = await db.collection('students_db').get();
+    const found = snap.docs.find(d => d.data().studentId === studentId);
+    const card = document.getElementById('studentFoundCard');
+    const nameEl = document.getElementById('sc_studentName');
+    const infoEl = document.getElementById('sc_studentInfo');
+    if (found) {
+      const s = found.data();
+      if (nameEl) nameEl.textContent = s.name || '—';
+      if (infoEl) infoEl.textContent = `${s.cls||''}${s.dept?' — '+s.dept:''} | ${s.type||''} | ${s.house||''}`;
+      if (card) card.style.display = 'block';
+    } else {
+      if (nameEl) nameEl.textContent = '❌ Student not found';
+      if (infoEl) infoEl.textContent = 'Check the Student ID and try again';
+      if (card) { card.style.display = 'block'; card.style.borderColor = 'var(--danger)'; }
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// Keep old function name for backward compat
+async function lookupStudent() { await lookupStudentForScore(); }
+
+// ===== RECORD SUBJECT SCORE =====
+async function recordSubjectScore() {
+  const studentId = document.getElementById('sc_studentId')?.value?.trim();
+  const studentName = document.getElementById('sc_studentName')?.textContent?.trim();
+  const subject = document.getElementById('sc_subject')?.value;
+  const term = document.getElementById('sc_term')?.value;
+  const assignment = parseFloat(document.getElementById('sc_assignment')?.value) || 0;
+  const test = parseFloat(document.getElementById('sc_test')?.value) || 0;
+  const exam = parseFloat(document.getElementById('sc_exam')?.value) || 0;
+  const total = assignment + test + exam;
+  const grade = total >= 70 ? 'A' : total >= 60 ? 'B' : total >= 50 ? 'C' : total >= 40 ? 'D' : 'F';
+  const remark = document.getElementById('sc_remark')?.value || '';
+
+  if (!studentId) { alert('Please enter and look up a Student ID first.'); return; }
+  if (!studentName || studentName.includes('not found')) { alert('Student not found. Please look up a valid Student ID.'); return; }
+  if (!subject) { alert('Please select a subject.'); return; }
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+
+  // Use a unique doc ID: studentId_subject_term so it UPDATES not duplicates
+  const docId = `${studentId}_${subject.replace(/\s/g,'_')}_${term.replace(/\s/g,'_')}`;
+
+  try {
+    await db.collection('grades').doc(docId).set({
+      studentId, studentName, subject, term,
+      assignment, test, exam, total, grade, remark,
+      recordedBy: currentTeacher.name || 'Teacher',
+      recordedAt: new Date().toISOString()
+    });
+
+    const suc = document.getElementById('scoreSuccess');
+    if (suc) { suc.classList.add('show'); setTimeout(() => suc.classList.remove('show'), 3000); }
+
+    // Reset score fields only — keep student and term
+    ['sc_assignment','sc_test','sc_exam','sc_total','sc_grade','sc_remark'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    loadScoreRecords();
+  } catch(err) { alert('Error saving score: ' + err.message); }
+}
+
+// Keep old function for compat
+async function recordScore() { await recordSubjectScore(); }
+
+// ===== LOAD SCORES TABLE (Teacher) =====
+async function loadScoreRecords() {
+  const tbody = document.getElementById('scoresTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading...</td></tr>';
+  if (!firebaseReady) { tbody.innerHTML = '<tr><td colspan="9" style="color:var(--danger);text-align:center;padding:1rem;">Firebase not connected.</td></tr>'; return; }
+
+  try {
+    const termFilter = document.getElementById('scoreTermFilter')?.value || '';
+    const snap = await db.collection('grades').get();
+    let scores = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(s => {
+        if (termFilter && s.term !== termFilter) return false;
+        // Only show this teacher's students' scores
+        if (currentTeacher.name === 'Demo Teacher') return true;
+        return s.recordedBy === currentTeacher.name;
+      })
+      .sort((a,b) => (a.studentName||'').localeCompare(b.studentName||'') || (a.subject||'').localeCompare(b.subject||''));
+
+    if (!scores.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:2rem;">No scores recorded yet.</td></tr>';
+      return;
+    }
+
+    const gradeColor = g => g==='A'?'#155724':g==='B'?'#0c5460':g==='C'?'#856404':g==='D'?'#a05c00':'#721c24';
+    const gradeBg = g => g==='A'?'#d4edda':g==='B'?'#d1ecf1':g==='C'?'#fff3cd':g==='D'?'#ffe8cc':'#f8d7da';
+
+    tbody.innerHTML = scores.map(s => `
+      <tr>
+        <td>
+          <strong style="font-size:0.85rem;">${s.studentName||'—'}</strong>
+          <div style="font-size:0.72rem;color:var(--gray-400);">${s.studentId||''}</div>
+        </td>
+        <td style="font-size:0.85rem;">${s.subject||'—'}</td>
+        <td style="text-align:center;font-weight:600;">${s.assignment??'—'}<div style="font-size:0.68rem;color:var(--gray-400);">/30</div></td>
+        <td style="text-align:center;font-weight:600;">${s.test??'—'}<div style="font-size:0.68rem;color:var(--gray-400);">/20</div></td>
+        <td style="text-align:center;font-weight:600;">${s.exam??'—'}<div style="font-size:0.68rem;color:var(--gray-400);">/50</div></td>
+        <td style="text-align:center;"><strong style="font-size:1rem;">${s.total??'—'}</strong><div style="font-size:0.68rem;color:var(--gray-400);">/100</div></td>
+        <td style="text-align:center;"><span style="background:${gradeBg(s.grade)};color:${gradeColor(s.grade)};font-weight:900;padding:4px 10px;border-radius:100px;font-size:0.85rem;">${s.grade||'—'}</span></td>
+        <td style="font-size:0.78rem;">${s.term||'—'}</td>
+        <td><button onclick="deleteScore('${s.id}')" style="background:var(--danger);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">🗑</button></td>
+      </tr>`).join('');
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--danger);">Error: ${err.message}</td></tr>`;
+  }
+}
+
+function filterScoreTable() {
+  const q = (document.getElementById('scoreSearchInput')?.value || '').toLowerCase();
+  document.querySelectorAll('#scoresTableBody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+async function deleteScore(docId) {
+  if (!confirm('Delete this score record?')) return;
+  if (!firebaseReady) return;
+  try { await db.collection('grades').doc(docId).delete(); loadScoreRecords(); }
+  catch(err) { alert('Error: ' + err.message); }
+}
 async function loadStudentResults() {
   const wrap = document.getElementById('resultsTableWrap');
   const summary = document.getElementById('resultsSummary');
@@ -4964,102 +5158,74 @@ async function loadStudentResults() {
   const studentId = feeState.admNo || document.getElementById('profileAdmNo')?.textContent || '';
   const term = document.getElementById('resultTerm')?.value || 'First Term 2025/2026';
 
-  if (!firebaseReady || !studentId || studentId === 'FER/2025/001') {
-    // Show demo data for demo student
-    wrap.innerHTML = `<table class="results-table"><thead><tr><th>Subject</th><th>Type</th><th>Score</th><th>Max</th><th>Grade</th><th>Remark</th></tr></thead>
-    <tbody>
-      <tr><td>Mathematics</td><td>CA</td><td>36</td><td>40</td><td class="grade-A">A</td><td>Excellent</td></tr>
-      <tr><td>English Language</td><td>Exam</td><td>50</td><td>60</td><td class="grade-A">A</td><td>Excellent</td></tr>
-      <tr><td>Biology</td><td>CA</td><td>30</td><td>40</td><td class="grade-B">B</td><td>Very Good</td></tr>
-    </tbody></table>
-    <div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:0.82rem;">Demo data — real scores appear when teacher records them</div>`;
-    return;
-  }
-
   wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading results...</div>';
+  if (!firebaseReady) { wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--danger);">Firebase not connected.</div>'; return; }
 
   try {
     const snap = await db.collection('grades').get();
-    const myScores = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+    const myScores = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .filter(s => s.studentId === studentId && s.term === term)
       .sort((a,b) => (a.subject||'').localeCompare(b.subject||''));
 
+    const gc = g => g==="A"?"#155724":g==="B"?"#0c5460":g==="C"?"#856404":g==="D"?"#a05c00":"#721c24";
+    const gb = g => g==="A"?"#d4edda":g==="B"?"#d1ecf1":g==="C"?"#fff3cd":g==="D"?"#ffe8cc":"#f8d7da";
+
     if (!myScores.length) {
-      wrap.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray-400);">
-        <div style="font-size:2rem;margin-bottom:1rem;">📋</div>
-        <div style="font-weight:600;margin-bottom:0.5rem;">No results for ${term}</div>
-        <div style="font-size:0.82rem;">Results will appear here once your teachers record your scores.</div>
-      </div>`;
+      wrap.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray-400);"><div style="font-size:2.5rem;margin-bottom:1rem;">📋</div><div style="font-weight:700;font-size:1rem;margin-bottom:0.5rem;">No results for ${term}</div><div style="font-size:0.82rem;">Results appear here once your teachers record your scores.</div></div>`;
       if (summary) summary.innerHTML = '';
+      if (assignList) assignList.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:0.82rem;">No graded assignments yet.</div>';
       return;
     }
 
-    // Group by subject — combine CA + Exam into one row per subject
-    const bySubject = {};
-    myScores.forEach(s => {
-      if (!bySubject[s.subject]) bySubject[s.subject] = { subject: s.subject, scores: [] };
-      bySubject[s.subject].scores.push(s);
-    });
+    wrap.innerHTML = `<table class="results-table" style="min-width:600px;">
+      <thead><tr style="background:var(--navy-dark);">
+        <th style="color:white;text-align:left;padding:12px 14px;">Subject</th>
+        <th style="color:var(--gold-light);text-align:center;padding:12px 8px;">Assignment<br><span style="font-size:0.7rem;font-weight:400;">/30</span></th>
+        <th style="color:var(--gold-light);text-align:center;padding:12px 8px;">Test<br><span style="font-size:0.7rem;font-weight:400;">/20</span></th>
+        <th style="color:var(--gold-light);text-align:center;padding:12px 8px;">Exam<br><span style="font-size:0.7rem;font-weight:400;">/50</span></th>
+        <th style="color:white;text-align:center;padding:12px 8px;">Total<br><span style="font-size:0.7rem;font-weight:400;">/100</span></th>
+        <th style="color:white;text-align:center;padding:12px 8px;">Grade</th>
+        <th style="color:rgba(255,255,255,0.6);text-align:left;padding:12px 14px;">Remark</th>
+      </tr></thead>
+      <tbody>${myScores.map((s,i) => `
+        <tr style="background:${i%2===0?"var(--white)":"var(--off-white)"};">
+          <td style="padding:12px 14px;font-weight:700;color:var(--navy);">${s.subject||"—"}</td>
+          <td style="text-align:center;padding:12px 8px;font-size:1rem;font-weight:700;">${s.assignment!=null?s.assignment:"—"}</td>
+          <td style="text-align:center;padding:12px 8px;font-size:1rem;font-weight:700;">${s.test!=null?s.test:"—"}</td>
+          <td style="text-align:center;padding:12px 8px;font-size:1rem;font-weight:700;">${s.exam!=null?s.exam:"—"}</td>
+          <td style="text-align:center;padding:12px 8px;"><span style="font-size:1.1rem;font-weight:900;color:var(--navy);">${s.total!=null?s.total:"—"}</span></td>
+          <td style="text-align:center;padding:12px 8px;"><span style="background:${gb(s.grade)};color:${gc(s.grade)};font-weight:900;padding:5px 14px;border-radius:100px;font-size:0.9rem;">${s.grade||"—"}</span></td>
+          <td style="padding:12px 14px;font-size:0.82rem;color:var(--gray-600);">${s.remark||"—"}</td>
+        </tr>`).join("")}
+      </tbody></table>`;
 
-    const gradeColor = g => g==='A'?'#155724':g==='B'?'#0c5460':g==='C'?'#856404':g==='D'?'#856404':'#721c24';
-    const gradeBg = g => g==='A'?'#d4edda':g==='B'?'#d1ecf1':g==='C'?'#fff3cd':g==='D'?'#fff3cd':'#f8d7da';
-
-    wrap.innerHTML = `
-      <table class="results-table">
-        <thead><tr><th>Subject</th><th>Type</th><th>Score</th><th>Max</th><th>Grade</th><th>Remark</th></tr></thead>
-        <tbody>
-          ${myScores.map(s => `
-            <tr>
-              <td><strong>${s.subject||'—'}</strong></td>
-              <td><span style="font-size:0.75rem;background:var(--gray-100);padding:2px 8px;border-radius:100px;">${s.type||'—'}</span></td>
-              <td><strong>${s.score}</strong></td>
-              <td>${s.maxScore||100}</td>
-              <td><span style="background:${gradeBg(s.grade)};color:${gradeColor(s.grade)};font-weight:700;padding:3px 10px;border-radius:100px;font-size:0.82rem;">${s.grade}</span></td>
-              <td style="font-size:0.82rem;">${s.remark||'—'}</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>`;
-
-    // Calculate summary
-    const totalPct = myScores.reduce((s,r) => s + (r.score/r.maxScore*100), 0) / myScores.length;
-    const overallGrade = totalPct >= 70 ? 'A' : totalPct >= 60 ? 'B' : totalPct >= 50 ? 'C' : totalPct >= 40 ? 'D' : 'F';
-
+    const withTotal = myScores.filter(s => s.total != null);
+    const avg = withTotal.length ? withTotal.reduce((s,r) => s+r.total,0)/withTotal.length : 0;
+    const og = avg>=70?"A":avg>=60?"B":avg>=50?"C":avg>=40?"D":"F";
     if (summary) summary.innerHTML = `
-      <div style="background:var(--white);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow-sm);text-align:center;">
-        <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:900;color:var(--navy);">${totalPct.toFixed(1)}%</div>
-        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.05em;">Average Score</div>
-      </div>
-      <div style="background:var(--white);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow-sm);text-align:center;">
-        <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:900;color:${gradeColor(overallGrade)};">${overallGrade}</div>
-        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.05em;">Overall Grade</div>
-      </div>
-      <div style="background:var(--white);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow-sm);text-align:center;">
-        <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:900;color:var(--gold);">${myScores.length}</div>
-        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.05em;">Subjects Recorded</div>
-      </div>`;
+      <div style="background:var(--white);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm);text-align:center;border-top:3px solid var(--navy);">
+        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:var(--navy);">${avg.toFixed(1)}</div>
+        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Average Score</div></div>
+      <div style="background:var(--white);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm);text-align:center;border-top:3px solid ${gb(og)};">
+        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:${gc(og)};">${og}</div>
+        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Overall Grade</div></div>
+      <div style="background:var(--white);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm);text-align:center;border-top:3px solid var(--gold);">
+        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:var(--gold);">${myScores.length}</div>
+        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Subjects</div></div>`;
 
-    // Load assignment scores too
     if (assignList) {
       const subSnap = await db.collection('submissions').get();
-      const mySubs = subSnap.docs.map(d => d.data()).filter(s => s.studentId === studentId && s.graded);
-      if (mySubs.length) {
-        assignList.innerHTML = mySubs.map(s => `
-          <div style="background:var(--white);border-radius:var(--radius);padding:0.875rem 1rem;box-shadow:var(--shadow-sm);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-left:3px solid var(--success);">
-            <div>
-              <div style="font-weight:600;font-size:0.875rem;">${s.assignmentTitle||'Assignment'}</div>
-              <div style="font-size:0.75rem;color:var(--gray-400);">Graded by ${s.gradedBy||'Teacher'} · ${s.gradedAt?new Date(s.gradedAt).toLocaleDateString('en-NG'):''}</div>
-              ${s.feedback ? `<div style="font-size:0.78rem;color:var(--gray-600);margin-top:3px;">💬 ${s.feedback}</div>` : ''}
-            </div>
-            <span style="background:#d4edda;color:#155724;font-weight:700;padding:4px 12px;border-radius:100px;font-size:0.85rem;">${s.score}/${s.maxScore||100} — ${s.grade}</span>
-          </div>`).join('');
-      } else {
-        assignList.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:0.82rem;">No graded assignments yet.</div>';
-      }
+      const mySubs = subSnap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>s.studentId===studentId&&s.graded);
+      assignList.innerHTML = mySubs.length ? mySubs.map(s=>`
+        <div style="background:var(--white);border-radius:var(--radius);padding:0.875rem 1rem;box-shadow:var(--shadow-sm);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-left:3px solid var(--success);">
+          <div><div style="font-weight:600;font-size:0.875rem;">${s.assignmentTitle||"Assignment"}</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);">${s.gradedBy||"Teacher"} · ${s.gradedAt?new Date(s.gradedAt).toLocaleDateString("en-NG"):""}</div>
+          ${s.feedback?`<div style="font-size:0.78rem;color:var(--gray-600);margin-top:3px;">💬 ${s.feedback}</div>`:""}</div>
+          <span style="background:${gb(s.grade)};color:${gc(s.grade)};font-weight:700;padding:4px 12px;border-radius:100px;font-size:0.85rem;">${s.score}/${s.maxScore||100} — ${s.grade}</span>
+        </div>`).join("") : '<div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:0.82rem;">No graded assignments yet.</div>';
     }
-
   } catch(err) {
-    wrap.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--danger);">Error loading results: ${err.message}</div>`;
+    wrap.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--danger);">Error: ${err.message}</div>`;
   }
 }
 
@@ -5293,12 +5459,21 @@ async function loadStudentAssignments() {
       return;
     }
 
-    // Get student's submissions
+    // Get student's submissions — each stored as unique doc: studentId_assignmentId
     const studentId = feeState.admNo || document.getElementById('profileAdmNo')?.textContent || '';
-    const subSnap = await db.collection('submissions').get();
-    // Filter client-side to avoid index requirement
     const mySubmissions = {};
-    subSnap.docs.filter(d => d.data().studentId === studentId).forEach(d => { mySubmissions[d.data().assignmentId] = { id: d.id, ...d.data() }; });
+
+    if (studentId) {
+      // Try new format first: unique doc per student+assignment
+      const allSubmissions = await db.collection('submissions').get();
+      allSubmissions.docs.forEach(d => {
+        const data = d.data();
+        // Match by studentId field OR by doc ID format
+        if (data.studentId === studentId) {
+          mySubmissions[data.assignmentId] = { id: d.id, ...data };
+        }
+      });
+    }
 
     // Check for new grades — show badge
     const newGrades = Object.values(mySubmissions).filter(s => s.graded && !s.seenByStudent).length;
@@ -5425,7 +5600,6 @@ async function submitAssignment() {
     submissionData.textAnswer = text;
   } else if (currentSubmitType === 'file') {
     if (!assignFileBase64) { alert('Please select a file first.'); return; }
-    // Upload to ImgBB if it's an image, otherwise store base64
     if (assignFileName.match(/\.(jpg|jpeg|png|gif)$/i)) {
       try {
         const base64 = assignFileBase64.split(',')[1];
@@ -5447,34 +5621,60 @@ async function submitAssignment() {
   }
 
   try {
-    // Check if already submitted
-    const existing = await db.collection('submissions')
-      .get(); // filter client-side
+    // KEY FIX: Use a unique document ID per student+assignment
+    // This guarantees each assignment has its OWN independent submission record
+    const submissionDocId = `${studentId}_${assignId}`.replace(/[^a-zA-Z0-9_]/g, '_');
 
-    if (!existing.empty) {
-      // Update existing submission
-      await db.collection('submissions').doc(existing.docs[0].id).update(submissionData);
-    } else {
-      await db.collection('submissions').add(submissionData);
+    // Check if this specific student has already submitted THIS specific assignment
+    const existingDoc = await db.collection('submissions').doc(submissionDocId).get();
+
+    if (existingDoc.exists && existingDoc.data().graded) {
+      // Don't allow resubmission of graded work
+      alert('This assignment has already been graded. You cannot resubmit it.');
+      closeSubmitForm();
+      return;
     }
 
-    // Notify teacher via Firestore notification
+    // Save/update ONLY this assignment's submission — never touches other submissions
+    await db.collection('submissions').doc(submissionDocId).set(submissionData, { merge: false });
+
+    // Notify teacher
     await db.collection('notifications').add({
       type: 'new_submission',
       assignmentId: assignId,
       studentName, studentId, studentCls,
       message: `${studentName} submitted an assignment`,
       createdAt: new Date().toISOString(),
-      read: false,
-      for: 'teacher'
+      read: false, for: 'teacher'
     });
 
     document.getElementById('submitSuccess').classList.add('show');
+
+    // KEY FIX: Only update THIS assignment's card — don't reload everything
     setTimeout(() => {
       closeSubmitForm();
-      loadStudentAssignments();
-    }, 2000);
+      // Update ONLY the card for this assignment without reloading all
+      updateSingleAssignmentCard(assignId);
+    }, 1500);
+
   } catch(err) { alert('Error submitting: ' + err.message); }
+}
+
+// Update only ONE assignment card status without reloading all assignments
+function updateSingleAssignmentCard(assignId) {
+  // Find the submit button for this specific assignment and update just its status
+  const buttons = document.querySelectorAll('#assignmentsList button');
+  buttons.forEach(btn => {
+    if (btn.onclick && btn.toString().includes(assignId)) {
+      const card = btn.closest('div[style*="border-left"]');
+      if (card) {
+        // Replace the submit button with "submitted" status
+        btn.outerHTML = `<div style="background:var(--gold-pale);border-radius:var(--radius);padding:0.75rem 1rem;font-size:0.82rem;color:var(--gray-600);">✅ Submitted. Waiting for teacher to grade.</div>`;
+      }
+    }
+  });
+  // Also refresh the full list to ensure accuracy
+  setTimeout(() => loadStudentAssignments(), 500);
 }
 
 // ---- ADMIN/TEACHER: Create Assignment ----
