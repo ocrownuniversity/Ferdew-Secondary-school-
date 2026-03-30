@@ -493,6 +493,8 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
   .hero-btns { flex-direction: column; }
   .step-item { flex-direction: column; gap: 12px; }
   #dashMobileSelect { display: block !important; }
+  #teacherMobileSelect { display: block !important; }
+  .teacher-mobile-nav { display: flex !important; }
 }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -2403,16 +2405,17 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
         <span id="teacherNameBadge" style="color:rgba(255,255,255,0.8);font-size:0.82rem;"></span>
         <span id="teacherRoleBadge" style="background:rgba(201,150,42,0.2);color:var(--gold-light);font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:100px;border:1px solid rgba(201,150,42,0.3);"></span>
-        <!-- Mobile dropdown -->
-        <select onchange="switchTeacher(this.value)" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);padding:6px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;display:none;" id="teacherMobileSelect">
-          <option value="overview">📊 Overview</option>
-          <option value="assignments">📝 Assignments</option>
-          <option value="grading">✅ Grade Work</option>
-          <option value="myclass">👥 My Class</option>
-          <option value="scores">📊 Scores</option>
-        </select>
         <button onclick="teacherLogout()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:var(--white);font-size:0.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;">🚪 Logout</button>
       </div>
+    </div>
+
+    <!-- MOBILE NAV TABS — always visible on mobile -->
+    <div class="teacher-mobile-nav" style="display:none;gap:6px;flex-wrap:wrap;padding:12px 5%;background:var(--navy);border-bottom:2px solid rgba(255,255,255,0.1);position:sticky;top:62px;z-index:99;">
+      <button onclick="switchTeacher('overview')" id="tnav-overview" style="background:var(--gold);color:var(--navy-dark);border:none;padding:8px 14px;border-radius:8px;font-size:0.8rem;font-weight:700;cursor:pointer;flex:1;min-width:80px;">📊 Overview</button>
+      <button onclick="switchTeacher('assignments')" id="tnav-assignments" style="background:rgba(255,255,255,0.1);color:var(--white);border:none;padding:8px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;flex:1;min-width:80px;">📝 Assignments</button>
+      <button onclick="switchTeacher('grading')" id="tnav-grading" style="background:rgba(255,255,255,0.1);color:var(--white);border:none;padding:8px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;flex:1;min-width:80px;">✅ Grade</button>
+      <button onclick="switchTeacher('myclass')" id="tnav-myclass" style="background:rgba(255,255,255,0.1);color:var(--white);border:none;padding:8px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;flex:1;min-width:80px;">👥 My Class</button>
+      <button onclick="switchTeacher('scores')" id="tnav-scores" style="background:rgba(255,255,255,0.1);color:var(--white);border:none;padding:8px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;flex:1;min-width:80px;">📈 Scores</button>
     </div>
 
     <!-- BODY -->
@@ -2445,6 +2448,26 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <div class="dash-header">
             <h2>Welcome, <span id="teacherWelcomeName">Teacher</span>! 👋</h2>
             <span style="font-size:0.875rem;color:var(--gray-600);" id="teacherDate"></span>
+          </div>
+
+          <!-- QUICK ACTION BUTTONS -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem;">
+            <button onclick="switchTeacher('assignments')" style="background:var(--navy);color:white;border:none;padding:16px;border-radius:var(--radius-lg);font-size:0.9rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.5rem;">📝</span>
+              <div><div>Assignments</div><div style="font-size:0.72rem;font-weight:400;opacity:0.8;">Create & manage</div></div>
+            </button>
+            <button onclick="switchTeacher('grading')" style="background:var(--success);color:white;border:none;padding:16px;border-radius:var(--radius-lg);font-size:0.9rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.5rem;">✅</span>
+              <div><div>Grade Work</div><div style="font-size:0.72rem;font-weight:400;opacity:0.8;">Mark submissions</div></div>
+            </button>
+            <button onclick="switchTeacher('myclass')" style="background:var(--gold);color:var(--navy-dark);border:none;padding:16px;border-radius:var(--radius-lg);font-size:0.9rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.5rem;">👥</span>
+              <div><div>My Class</div><div style="font-size:0.72rem;font-weight:400;opacity:0.7;">View students</div></div>
+            </button>
+            <button onclick="switchTeacher('scores')" style="background:#6c5ce7;color:white;border:none;padding:16px;border-radius:var(--radius-lg);font-size:0.9rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:1.5rem;">📈</span>
+              <div><div>Scores</div><div style="font-size:0.72rem;font-weight:400;opacity:0.8;">Record marks</div></div>
+            </button>
           </div>
           <div class="dash-cards" style="grid-template-columns:repeat(4,1fr);">
             <div class="dash-card"><div class="num" id="t_totalAssign">0</div><div class="lbl">My Assignments</div></div>
@@ -4260,13 +4283,25 @@ function teacherLogout() {
 function switchTeacher(section) {
   document.querySelectorAll('#page-teacher .dash-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`teacher-${section}`)?.classList.add('active');
-  // Highlight active nav item
+
+  // Highlight sidebar nav (desktop)
   document.querySelectorAll('#page-teacher .dash-nav-item').forEach(i => i.classList.remove('active'));
-  document.querySelectorAll('#page-teacher .dash-nav-item').forEach(i => {
-    if (i.onclick && i.onclick.toString().includes(`'${section}'`)) i.classList.add('active');
+
+  // Highlight mobile nav buttons
+  ['overview','assignments','grading','myclass','scores'].forEach(s => {
+    const btn = document.getElementById(`tnav-${s}`);
+    if (!btn) return;
+    if (s === section) {
+      btn.style.background = 'var(--gold)';
+      btn.style.color = 'var(--navy-dark)';
+      btn.style.fontWeight = '700';
+    } else {
+      btn.style.background = 'rgba(255,255,255,0.1)';
+      btn.style.color = 'var(--white)';
+      btn.style.fontWeight = '600';
+    }
   });
-  const sel = document.getElementById('teacherMobileSelect');
-  if (sel) sel.value = section;
+
   if (section === 'overview') loadTeacherOverview();
   if (section === 'assignments') loadTeacherAssignments();
   if (section === 'grading') { loadAssignmentFilterOptions(); loadTeacherSubmissions(); }
