@@ -1830,6 +1830,13 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
       </div>
     </div>
     <div class="dash-main">
+      <!-- FIRESTORE WARNING -->
+      <div id="firestoreWarning" style="display:none;background:#f8d7da;border:1px solid #f5c6cb;border-radius:var(--radius);padding:1rem;margin-bottom:1rem;font-size:0.85rem;color:#721c24;">
+        ⚠️ <strong>Firestore permissions blocked!</strong> Nothing will save until you fix the rules.<br>
+        Go to <strong>Firebase Console → Cloud Firestore → Rules</strong> → replace everything with:<br>
+        <code style="background:#f1c2c7;padding:4px 8px;border-radius:4px;font-size:0.75rem;display:block;margin:6px 0;word-break:break-all;">rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { match /{document=**} { allow read, write: if true; } } }</code>
+        → Click <strong>Publish</strong>.
+      </div>
       <!-- OVERVIEW -->
       <div class="dash-section active" id="dash-overview">
         <div class="dash-header">
@@ -3833,16 +3840,31 @@ function switchDash(section) {
 }
 
 function switchDashByName(section) {
-  document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
+  // Only affect admin dashboard sections (not teacher portal)
+  document.querySelectorAll('#page-admin .dash-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`dash-${section}`)?.classList.add('active');
-  // Auto-load data when switching to these sections
   if (section === 'students') loadStudents();
   if (section === 'staff') loadStaffList();
   if (section === 'feepayments') loadFeePayments();
   if (section === 'assignments') loadAdminAssignments();
+  if (section === 'subadmins') syncSubAdminPanel();
 }
 
 async function loadAdminData() {
+  // Check Firestore connection
+  if (firebaseReady) {
+    try {
+      await db.collection('_ping').doc('test').set({ ts: Date.now() });
+      await db.collection('_ping').doc('test').delete();
+      // Rules OK — hide warning
+      const warn = document.getElementById('firestoreWarning');
+      if (warn) warn.style.display = 'none';
+    } catch(e) {
+      // Show persistent warning
+      const warn = document.getElementById('firestoreWarning');
+      if (warn) warn.style.display = 'block';
+    }
+  }
   if (!firebaseReady) { loadDemoData(); return; }
   try {
     const admSnap = await db.collection('admissions').orderBy('timestamp','desc').limit(20).get();
@@ -4264,13 +4286,17 @@ function teacherLogout() {
 function switchTeacher(section) {
   document.querySelectorAll('#page-teacher .dash-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`teacher-${section}`)?.classList.add('active');
+  // Highlight active nav item
   document.querySelectorAll('#page-teacher .dash-nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('#page-teacher .dash-nav-item').forEach(i => {
+    if (i.onclick && i.onclick.toString().includes(`'${section}'`)) i.classList.add('active');
+  });
   const sel = document.getElementById('teacherMobileSelect');
   if (sel) sel.value = section;
   if (section === 'overview') loadTeacherOverview();
   if (section === 'assignments') loadTeacherAssignments();
   if (section === 'grading') { loadAssignmentFilterOptions(); loadTeacherSubmissions(); }
-  if (section === 'myclass') {}
+  if (section === 'myclass') loadTeacherClassStudents();
   if (section === 'scores') loadScoreRecords();
 }
 
