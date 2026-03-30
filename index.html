@@ -2269,7 +2269,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
             <button class="btn btn-sm btn-navy" onclick="loadSubAdmins()">🔄 Refresh</button>
           </div>
           <table class="dash-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Created</th><th>Action</th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Subject / Class</th><th>Created</th><th>Action</th></tr></thead>
             <tbody id="subAdminList"><tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:2rem;">Click "Refresh" to load accounts.</td></tr></tbody>
           </table>
         </div>
@@ -3732,32 +3732,88 @@ async function createSubAdmin() {
   if (btn) { btn.textContent = 'Create Account'; btn.disabled = false; }
 }
 
-async function loadSubAdmins() {
+// ===== SYNC STAFF WITH SUB-ADMIN PANEL =====
+async function syncSubAdminPanel() {
   if (!firebaseReady) return;
   try {
-    const snap = await db.collection('admins').get();
+    // Get all staff with portal access
+    const staffSnap = await db.collection('staff').where('portalAccess','==',true).get();
     const tbody = document.getElementById('subAdminList');
     if (!tbody) return;
-    if (snap.empty) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:2rem;">No sub-admins created yet.</td></tr>'; return; }
-    tbody.innerHTML = snap.docs.map(d => {
-      const a = d.data();
+
+    const adminSnap = await db.collection('admins').get();
+    const admins = adminSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Merge staff and admins for display
+    const allAccounts = [];
+    staffSnap.docs.forEach(d => {
+      const s = d.data();
+      const matchedAdmin = admins.find(a => a.email === s.email);
+      allAccounts.push({
+        name: s.name,
+        email: s.email,
+        role: s.adminRole || 'teacher',
+        staffRole: s.role,
+        subject: s.subject || '',
+        cls: s.cls || '',
+        isClassTeacher: s.isClassTeacher || (s.role||'').includes('Class'),
+        isSubjectTeacher: s.isSubjectTeacher || (s.role||'').includes('Subject'),
+        uid: matchedAdmin?.id || '',
+        createdAt: s.createdAt || '',
+        source: 'staff'
+      });
+    });
+
+    // Also add pure admins not in staff
+    admins.forEach(a => {
+      if (!allAccounts.find(ac => ac.email === a.email)) {
+        allAccounts.push({ ...a, source: 'admin' });
+      }
+    });
+
+    if (!allAccounts.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">No accounts yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = allAccounts.map(a => {
+      const roleLabel = a.role === 'superadmin' ? '👑 Super Admin'
+        : a.role === 'principal' ? '🏫 Principal'
+        : a.role === 'bursar' ? '💰 Bursar'
+        : a.role === 'secretary' ? '📋 Secretary'
+        : a.role === 'housemaster' ? '🏠 Housemaster'
+        : '👩‍🏫 Teacher';
+
+      const accessInfo = a.isSubjectTeacher && a.subject
+        ? `📚 ${a.subject.split(',')[0]}` : '';
+      const classInfo = a.isClassTeacher && a.cls
+        ? `🏫 ${a.cls}` : '';
+
       return `<tr>
-        <td><strong>${a.name}</strong></td>
-        <td>${a.email}</td>
-        <td><span class="status-badge approved">${ROLE_LABELS[a.role]||a.role}</span></td>
+        <td><strong>${a.name||'—'}</strong></td>
+        <td style="font-size:0.78rem;">${a.email||'—'}</td>
+        <td>
+          <span class="status-badge approved">${roleLabel}</span>
+          <div style="font-size:0.72rem;color:var(--gray-400);margin-top:2px;">${a.staffRole||''}</div>
+        </td>
+        <td style="font-size:0.78rem;">${[accessInfo, classInfo].filter(Boolean).join(' | ')||'—'}</td>
         <td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-NG') : '—'}</td>
-        <td><button onclick="deleteSubAdmin('${d.id}')" style="background:var(--danger);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">Remove</button></td>
+        <td>${a.uid ? `<button onclick="deleteSubAdmin('${a.uid}')" style="background:var(--danger);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">Remove</button>` : '—'}</td>
       </tr>`;
     }).join('');
-  } catch(e) { console.log('Load sub-admins error:', e.message); }
+  } catch(e) { console.log('Sync error:', e.message); }
+}
+
+async function loadSubAdmins() {
+  await syncSubAdminPanel();
 }
 
 async function deleteSubAdmin(uid) {
-  if (!confirm('Remove this sub-admin account?')) return;
+  if (!confirm('Remove this account? They will no longer be able to login.')) return;
   if (firebaseReady) {
     try {
       await db.collection('admins').doc(uid).delete();
-      loadSubAdmins();
+      syncSubAdminPanel();
     } catch(e) { alert('Error: ' + e.message); }
   }
 }
@@ -4122,49 +4178,40 @@ async function teacherLogin() {
   const btn = document.querySelector('#teacherLogin .btn-navy');
   if (btn) { btn.textContent = 'Logging in...'; btn.disabled = true; }
 
-  // Demo teacher login
   if (email === 'teacher@ferdew.edu.ng' && pass === 'teacher123') {
-    currentTeacher = { name: 'Demo Teacher', email, subject: 'Mathematics', cls: 'JSS 1', role: 'Teacher' };
-    openTeacherDash();
-    err.classList.remove('show');
+    currentTeacher = { name:'Demo Teacher', email, subjects:['Mathematics'], subject:'Mathematics', cls:'JSS 1', role:'Subject & Class Teacher', isSubjectTeacher:true, isClassTeacher:true };
+    openTeacherDash(); err.classList.remove('show');
     if (btn) { btn.textContent = 'Login to Teacher Portal'; btn.disabled = false; }
     return;
   }
 
-  // Firebase Auth login
   if (firebaseReady) {
     try {
       const cred = await auth.signInWithEmailAndPassword(email, pass);
-      // Check if this is an admin with teacher role
-      const adminDoc = await db.collection('admins').doc(cred.user.uid).get();
-      if (adminDoc.exists && (adminDoc.data().role === 'teacher' || adminDoc.data().role === 'principal')) {
-        currentTeacher = { name: adminDoc.data().name, email, role: adminDoc.data().role, uid: cred.user.uid };
-        // Get staff details
-        const staffSnap = await db.collection('staff').where('email','==',email).get();
-        if (!staffSnap.empty) {
-          const s = staffSnap.docs[0].data();
-          currentTeacher.subject = s.subject || '';
-          currentTeacher.cls = s.cls || '';
-        }
-        openTeacherDash();
-        err.classList.remove('show');
-      } else {
-        // Check staff collection directly
-        const staffSnap = await db.collection('staff').where('email','==',email).get();
-        if (!staffSnap.empty) {
-          const s = staffSnap.docs[0].data();
-          currentTeacher = { name: s.name, email, subject: s.subject||'', cls: s.cls||'', role: s.role||'Teacher', uid: cred.user.uid };
-          openTeacherDash();
-          err.classList.remove('show');
-        } else {
-          err.textContent = 'Access denied. Contact Admin.';
-          err.classList.add('show');
-          await auth.signOut();
-        }
+      const uid = cred.user.uid;
+      let teacherData = { uid };
+      const adminDoc = await db.collection('admins').doc(uid).get();
+      if (adminDoc.exists) teacherData = { ...teacherData, ...adminDoc.data() };
+      const staffSnap = await db.collection('staff').where('email','==',email).get();
+      if (!staffSnap.empty) teacherData = { ...teacherData, ...staffSnap.docs[0].data(), uid };
+      if (!teacherData.name) {
+        err.textContent = 'Staff account not found. Contact your school admin.';
+        err.classList.add('show'); await auth.signOut();
+        if (btn) { btn.textContent = 'Login to Teacher Portal'; btn.disabled = false; }
+        return;
       }
+      currentTeacher = {
+        name: teacherData.name, email, uid,
+        role: teacherData.role || 'Subject Teacher',
+        subjects: teacherData.subjects || (teacherData.subject ? teacherData.subject.split(',').map(s=>s.trim()) : []),
+        subject: teacherData.subject || '',
+        cls: teacherData.cls || '',
+        isSubjectTeacher: !!(teacherData.isSubjectTeacher || (teacherData.role||'').includes('Subject')),
+        isClassTeacher: !!(teacherData.isClassTeacher || (teacherData.role||'').includes('Class')),
+      };
+      openTeacherDash(); err.classList.remove('show');
     } catch(e) {
-      err.textContent = e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found'
-        ? 'Invalid email or password.' : 'Login failed: ' + e.message;
+      err.textContent = e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found' ? 'Invalid email or password.' : 'Login failed: ' + e.message;
       err.classList.add('show');
     }
   } else {
@@ -4179,9 +4226,29 @@ function openTeacherDash() {
   document.getElementById('teacherDash').style.display = 'flex';
   document.getElementById('teacherWelcomeName').textContent = currentTeacher.name || 'Teacher';
   document.getElementById('teacherNameBadge').textContent = currentTeacher.name || '';
-  document.getElementById('teacherRoleBadge').textContent = '👩‍🏫 ' + (currentTeacher.role || 'Teacher');
   document.getElementById('teacherSidebarName').textContent = currentTeacher.name || 'Teacher';
   document.getElementById('teacherDate').textContent = new Date().toLocaleDateString('en-NG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Build role badge
+  let roleInfo = currentTeacher.role || 'Teacher';
+  if (currentTeacher.isSubjectTeacher && currentTeacher.subjects?.length) roleInfo += ' — ' + currentTeacher.subjects.slice(0,2).join(', ');
+  if (currentTeacher.isClassTeacher && currentTeacher.cls) roleInfo += (currentTeacher.isSubjectTeacher ? ' | ' : ' — ') + 'Class Teacher: ' + currentTeacher.cls;
+  document.getElementById('teacherRoleBadge').textContent = '👩‍🏫 ' + roleInfo;
+
+  // Hide "My Class" tab if not a class teacher
+  const myClassItems = document.querySelectorAll('#page-teacher .dash-nav-item');
+  myClassItems.forEach(item => {
+    if (item.textContent.includes('My Class')) {
+      item.style.display = currentTeacher.isClassTeacher ? 'flex' : 'none';
+    }
+  });
+
+  // Pre-fill class filter in My Class if class teacher
+  if (currentTeacher.isClassTeacher && currentTeacher.cls) {
+    const clsEl = document.getElementById('t_myClassFilter');
+    if (clsEl) { clsEl.value = currentTeacher.cls; }
+  }
+
   switchTeacher('overview');
 }
 
@@ -4364,7 +4431,12 @@ async function loadTeacherAssignments() {
     const typeFilter = document.getElementById('t_typeFilter')?.value || '';
 
     let assignments = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(a => a.createdBy === currentTeacher.name || currentTeacher.name === 'Demo Teacher' || a.createdBy === 'Admin');
+      .filter(a => {
+        // Show assignments created by this teacher
+        if (a.createdBy === currentTeacher.name) return true;
+        if (currentTeacher.name === 'Demo Teacher') return true;
+        return false;
+      });
     if (clsFilter) assignments = assignments.filter(a => a.cls === clsFilter || a.cls === 'All Classes');
     if (typeFilter) assignments = assignments.filter(a => a.type === typeFilter);
     assignments.sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
@@ -4578,28 +4650,52 @@ async function deleteTeacherAssignment(assignId) {
 
 // ---- MY CLASS ----
 async function loadTeacherClassStudents() {
-  const cls = document.getElementById('t_myClassFilter')?.value;
   const el = document.getElementById('teacherClassStudents');
-  if (!el || !cls) return;
+  if (!el) return;
+
+  // If class teacher, lock to their class
+  let cls = document.getElementById('t_myClassFilter')?.value || '';
+  if (currentTeacher.isClassTeacher && currentTeacher.cls && !currentTeacher.isSubjectTeacher) {
+    cls = currentTeacher.cls;
+    const clsEl = document.getElementById('t_myClassFilter');
+    if (clsEl) { clsEl.value = cls; clsEl.disabled = true; }
+  }
+
+  if (!cls) { el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray-400);">Select a class to view students.</div>'; return; }
   el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading...</div>';
   if (!firebaseReady) { el.innerHTML = '<div style="color:var(--danger);">Firebase not connected.</div>'; return; }
+
   try {
-    const snap = await db.collection('students_db').where('cls','==',cls).get();
-    if (snap.empty) { el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray-400);">No students in this class.</div>'; return; }
-    const students = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    // For subject teachers — filter by students offering their subject
+    let snap;
+    if (currentTeacher.isSubjectTeacher && !currentTeacher.isClassTeacher) {
+      // Subject teachers see students in classes where their subject is taught
+      snap = await db.collection('students_db').get();
+    } else {
+      snap = await db.collection('students_db').where('cls','==',cls.split(' ').slice(0,2).join(' ')).get();
+    }
+
+    if (snap.empty) { el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray-400);">No students found.</div>'; return; }
+    const students = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(s => !cls || s.cls === cls || s.cls === cls.split(' ').slice(0,2).join(' '))
+      .sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
     el.innerHTML = `
-      <div style="margin-bottom:1rem;font-size:0.875rem;color:var(--gray-600);"><strong>${students.length}</strong> students in ${cls}</div>
+      <div style="background:var(--gold-pale);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.82rem;color:var(--gray-600);">
+        ${currentTeacher.isClassTeacher && !currentTeacher.isSubjectTeacher
+          ? `👨‍🏫 You are the <strong>Class Teacher</strong> for <strong>${cls}</strong>. You can see all ${students.length} students.`
+          : `📚 Showing students for <strong>${cls}</strong> — you teach: <strong>${(currentTeacher.subjects||[]).join(', ')||currentTeacher.subject}</strong>`}
+      </div>
       <div class="dash-table-wrap">
         <table class="dash-table">
-          <thead><tr><th>#</th><th>Student ID</th><th>Full Name</th><th>Gender</th><th>Department</th><th>Type</th><th>House</th></tr></thead>
+          <thead><tr><th>#</th><th>Student ID</th><th>Full Name</th><th>Gender</th><th>Dept</th><th>Type</th><th>House</th></tr></thead>
           <tbody>
             ${students.map((s,i) => `
               <tr>
                 <td>${i+1}</td>
-                <td><code style="font-size:0.75rem;background:var(--gray-100);padding:2px 6px;border-radius:4px;">${s.studentId||'—'}</code></td>
+                <td><code style="font-size:0.72rem;background:var(--gray-100);padding:2px 6px;border-radius:4px;">${s.studentId||'—'}</code></td>
                 <td><strong>${s.name||'—'}</strong></td>
-                <td><span style="background:${s.gender==='Male'?'#d1ecf1':'#fce4ec'};color:${s.gender==='Male'?'#0c5460':'#880e4f'};padding:2px 8px;border-radius:100px;font-size:0.75rem;">${s.gender||'—'}</span></td>
+                <td><span style="background:${s.gender==='Male'?'#d1ecf1':'#fce4ec'};color:${s.gender==='Male'?'#0c5460':'#880e4f'};padding:2px 8px;border-radius:100px;font-size:0.72rem;">${s.gender||'—'}</span></td>
                 <td>${s.dept||'—'}</td>
                 <td>${s.type||'—'}</td>
                 <td>${s.house||'—'}</td>
@@ -5499,132 +5595,242 @@ function showStaffModal(docId) {
   const existing = document.getElementById('staffModal');
   if (existing) existing.remove();
 
+  const SUBJECTS = ['Mathematics','English Language','Biology','Chemistry','Physics',
+    'Economics','Government','Literature in English','Geography','Financial Accounting',
+    'Commerce','Civic Education','Further Mathematics','Agricultural Science',
+    'Computer Science','Fine Arts','French','Physical Education','Music'];
+
+  const CLASSES = ['JSS 1','JSS 2','JSS 3','SSS 1','SSS 2','SSS 3',
+    'SSS 1 Science','SSS 1 Arts','SSS 1 Commercial',
+    'SSS 2 Science','SSS 2 Arts','SSS 2 Commercial',
+    'SSS 3 Science','SSS 3 Arts','SSS 3 Commercial'];
+
   const modal = document.createElement('div');
   modal.id = 'staffModal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;';
   modal.innerHTML = `
-    <div style="background:var(--white);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;">
+    <div style="background:var(--white);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
         <h3 style="font-size:1.1rem;color:var(--navy);">${docId ? '✏️ Edit Staff' : '➕ Add Staff Member'}</h3>
         <button onclick="document.getElementById('staffModal').remove()" style="background:var(--gray-100);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;">✕</button>
       </div>
       <div class="form-grid">
         <div class="form-group full"><label>Full Name *</label><input type="text" id="sfm_name" placeholder="e.g. Mrs. Adunola Okafor"></div>
-        <div class="form-group"><label>Role *</label>
-          <select id="sfm_role">
-            <option>Teacher</option><option>Principal</option><option>Vice Principal</option>
-            <option>Bursar</option><option>Secretary</option><option>Housemaster</option>
-            <option>Housemistress</option><option>Counsellor</option><option>Librarian</option><option>Admin Staff</option>
+
+        <div class="form-group"><label>Staff Role *</label>
+          <select id="sfm_role" onchange="toggleStaffFields()">
+            <option value="Subject Teacher">Subject Teacher</option>
+            <option value="Class Teacher">Class Teacher</option>
+            <option value="Subject & Class Teacher">Subject & Class Teacher</option>
+            <option value="Principal">Principal</option>
+            <option value="Vice Principal">Vice Principal</option>
+            <option value="Bursar">Bursar</option>
+            <option value="Secretary">Secretary</option>
+            <option value="Housemaster">Housemaster</option>
+            <option value="Housemistress">Housemistress</option>
+            <option value="Counsellor">Counsellor</option>
+            <option value="Librarian">Librarian</option>
+            <option value="Admin Staff">Admin Staff</option>
           </select>
         </div>
+
         <div class="form-group"><label>Gender</label>
           <select id="sfm_gender"><option>Female</option><option>Male</option></select>
         </div>
-        <div class="form-group"><label>Subject(s)</label><input type="text" id="sfm_subject" placeholder="e.g. Mathematics, Physics"></div>
-        <div class="form-group"><label>Phone</label><input type="tel" id="sfm_phone" placeholder="08XXXXXXXXX"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="sfm_email" placeholder="staff@ferdew.edu.ng"></div>
-        <div class="form-group"><label>Qualification</label><input type="text" id="sfm_qual" placeholder="e.g. B.Sc Education, M.Ed"></div>
-        <div class="form-group"><label>Portal Access</label>
-          <select id="sfm_access"><option value="false">No Portal Access</option><option value="true">Yes — Can Login</option></select>
+
+        <!-- SUBJECT FIELDS — show for subject teachers -->
+        <div class="form-group full" id="sfm_subject_wrap">
+          <label>Subject(s) Taught *</label>
+          <select id="sfm_subject" multiple style="height:120px;">
+            ${SUBJECTS.map(s=>`<option value="${s}">${s}</option>`).join('')}
+          </select>
+          <span style="font-size:0.75rem;color:var(--gray-400);">Hold Ctrl/Cmd to select multiple subjects</span>
         </div>
+
+        <!-- CLASS FIELDS — show for class teachers -->
+        <div class="form-group full" id="sfm_class_wrap" style="display:none;">
+          <label>Assigned Class *</label>
+          <select id="sfm_cls">
+            <option value="">-- Select Class --</option>
+            ${CLASSES.map(c=>`<option value="${c}">${c}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-group"><label>Phone</label><input type="tel" id="sfm_phone" placeholder="08XXXXXXXXX"></div>
+        <div class="form-group"><label>Email *</label><input type="email" id="sfm_email" placeholder="staff@ferdew.edu.ng"></div>
+        <div class="form-group"><label>Qualification</label><input type="text" id="sfm_qual" placeholder="e.g. B.Sc Education, M.Ed"></div>
+        <div class="form-group"><label>Teacher Portal Access</label>
+          <select id="sfm_access"><option value="true">✅ Yes — Can Login</option><option value="false">❌ No</option></select>
+        </div>
+
         ${currentAdminRole === 'superadmin' ? `
         <div class="form-group full" style="background:var(--gold-pale);border-radius:var(--radius);padding:1rem;border:1px solid rgba(201,150,42,0.3);">
-          <label style="color:var(--navy);font-weight:700;">🔐 Admin Dashboard Access (Super Admin only)</label>
-          <select id="sfm_adminrole" style="margin-top:8px;">
-            <option value="">No Dashboard Access</option>
-            <option value="principal">🏫 Principal</option>
-            <option value="bursar">💰 Bursar</option>
-            <option value="secretary">📋 Secretary</option>
-            <option value="teacher">👨‍🏫 Teacher</option>
-            <option value="housemaster">🏠 Housemaster</option>
-          </select>
+          <label style="color:var(--navy);font-weight:700;">🔐 Teacher Portal Password (Super Admin only)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-            <input type="email" id="sfm_adminemail" placeholder="Login email">
-            <input type="password" id="sfm_adminpass" placeholder="Login password (min 6 chars)">
+            <input type="password" id="sfm_adminpass" placeholder="Set login password (min 6 chars)">
+            <input type="password" id="sfm_adminpass2" placeholder="Confirm password">
           </div>
-          <div style="font-size:0.75rem;color:var(--gray-400);margin-top:6px;">Leave email/password blank if no dashboard access needed.</div>
+          <div style="font-size:0.75rem;color:var(--gray-400);margin-top:6px;">Leave blank to keep existing password or skip for now.</div>
         </div>` : ''}
       </div>
       <div style="display:flex;gap:10px;margin-top:1.5rem;">
         <button onclick="saveStaffMember('${docId||''}')" class="btn btn-primary" style="flex:1;">💾 ${docId?'Save Changes':'Add Staff'}</button>
         <button onclick="document.getElementById('staffModal').remove()" class="btn" style="background:var(--gray-100);color:var(--gray-800);">Cancel</button>
       </div>
-      <div id="sfmSuccess" style="display:none;margin-top:1rem;background:#d4edda;color:#155724;padding:10px;border-radius:8px;font-size:0.875rem;">✅ Staff member saved!</div>
+      <div id="sfmSuccess" style="display:none;margin-top:1rem;background:#d4edda;color:#155724;padding:10px;border-radius:8px;font-size:0.875rem;">✅ Staff member saved! They can now login to the Teacher Portal.</div>
     </div>`;
   document.body.appendChild(modal);
+  toggleStaffFields();
 
   // Load existing data if editing
   if (docId && firebaseReady) {
     db.collection('staff').doc(docId).get().then(doc => {
-      if (doc.exists) {
-        const s = doc.data();
-        document.getElementById('sfm_name').value = s.name || '';
-        document.getElementById('sfm_role').value = s.role || 'Teacher';
-        document.getElementById('sfm_gender').value = s.gender || 'Female';
-        document.getElementById('sfm_subject').value = s.subject || '';
-        document.getElementById('sfm_phone').value = s.phone || '';
-        document.getElementById('sfm_email').value = s.email || '';
-        document.getElementById('sfm_qual').value = s.qualification || '';
-        document.getElementById('sfm_access').value = String(s.portalAccess || false);
-        if (currentAdminRole === 'superadmin') {
-          const ar = document.getElementById('sfm_adminrole');
-          if (ar) ar.value = s.adminRole || '';
-        }
+      if (!doc.exists) return;
+      const s = doc.data();
+      document.getElementById('sfm_name').value = s.name || '';
+      document.getElementById('sfm_role').value = s.role || 'Subject Teacher';
+      document.getElementById('sfm_gender').value = s.gender || 'Female';
+      document.getElementById('sfm_phone').value = s.phone || '';
+      document.getElementById('sfm_email').value = s.email || '';
+      document.getElementById('sfm_qual').value = s.qualification || '';
+      document.getElementById('sfm_access').value = String(s.portalAccess !== false);
+      const clsEl = document.getElementById('sfm_cls');
+      if (clsEl && s.cls) clsEl.value = s.cls;
+      // Set subjects (multi-select)
+      const subEl = document.getElementById('sfm_subject');
+      if (subEl && s.subjects) {
+        Array.from(subEl.options).forEach(opt => {
+          opt.selected = s.subjects.includes(opt.value);
+        });
+      } else if (subEl && s.subject) {
+        Array.from(subEl.options).forEach(opt => {
+          opt.selected = s.subject.split(',').map(x=>x.trim()).includes(opt.value);
+        });
       }
+      toggleStaffFields();
     });
   }
 }
 
+function toggleStaffFields() {
+  const role = document.getElementById('sfm_role')?.value || '';
+  const isSubject = role.includes('Subject');
+  const isClass = role.includes('Class');
+  const subWrap = document.getElementById('sfm_subject_wrap');
+  const clsWrap = document.getElementById('sfm_class_wrap');
+  if (subWrap) subWrap.style.display = isSubject ? 'flex' : 'none';
+  if (clsWrap) clsWrap.style.display = isClass ? 'flex' : 'none';
+}
+
 async function saveStaffMember(docId) {
   const name = document.getElementById('sfm_name')?.value?.trim();
+  const email = document.getElementById('sfm_email')?.value?.trim();
   if (!name) { alert('Please enter staff name.'); return; }
+  if (!email) { alert('Please enter staff email.'); return; }
   if (!firebaseReady) { alert('Firebase not connected.'); return; }
 
+  // Get selected subjects
+  const subEl = document.getElementById('sfm_subject');
+  const subjects = subEl ? Array.from(subEl.selectedOptions).map(o => o.value) : [];
+  const subject = subjects.join(', ');
+
+  const role = document.getElementById('sfm_role')?.value || 'Subject Teacher';
+  const cls = document.getElementById('sfm_cls')?.value || '';
+  const portalAccess = document.getElementById('sfm_access')?.value === 'true';
+  const pass = document.getElementById('sfm_adminpass')?.value?.trim() || '';
+  const pass2 = document.getElementById('sfm_adminpass2')?.value?.trim() || '';
+
+  if (pass && pass !== pass2) { alert('Passwords do not match!'); return; }
+  if (pass && pass.length < 6) { alert('Password must be at least 6 characters.'); return; }
+
+  // Determine dashboard role from staff role
+  let adminRole = '';
+  if (role.includes('Teacher')) adminRole = 'teacher';
+  else if (role === 'Principal') adminRole = 'principal';
+  else if (role === 'Vice Principal') adminRole = 'principal';
+  else if (role === 'Bursar') adminRole = 'bursar';
+  else if (role === 'Secretary') adminRole = 'secretary';
+  else if (role.includes('House')) adminRole = 'housemaster';
+
   const data = {
-    name,
-    role: document.getElementById('sfm_role')?.value || 'Teacher',
+    name, email, role, subject, subjects, cls,
     gender: document.getElementById('sfm_gender')?.value || 'Female',
-    subject: document.getElementById('sfm_subject')?.value || '',
     phone: document.getElementById('sfm_phone')?.value || '',
-    email: document.getElementById('sfm_email')?.value || '',
     qualification: document.getElementById('sfm_qual')?.value || '',
-    portalAccess: document.getElementById('sfm_access')?.value === 'true',
+    portalAccess,
+    adminRole,
     updatedAt: new Date().toISOString()
   };
 
-  // Super admin can assign dashboard role
-  if (currentAdminRole === 'superadmin') {
-    const adminRole = document.getElementById('sfm_adminrole')?.value || '';
-    const adminEmail = document.getElementById('sfm_adminemail')?.value?.trim() || '';
-    const adminPass = document.getElementById('sfm_adminpass')?.value?.trim() || '';
-    data.adminRole = adminRole;
-
-    // Create Firebase Auth account if email and password provided
-    if (adminRole && adminEmail && adminPass && adminPass.length >= 6 && !docId) {
-      try {
-        const cred = await auth.createUserWithEmailAndPassword(adminEmail, adminPass);
-        await db.collection('admins').doc(cred.user.uid).set({
-          name, email: adminEmail, role: adminRole,
-          createdAt: new Date().toISOString(), createdBy: currentAdminName
-        });
-        data.adminUid = cred.user.uid;
-        // Re-sign in as super admin
-        await auth.signInWithEmailAndPassword('ferdew31@gmail.com', 'admin123').catch(()=>{});
-      } catch(e) { console.log('Auth create error:', e.message); }
-    }
-  }
-
   try {
+    let staffDocId = docId;
+
     if (docId) {
       await db.collection('staff').doc(docId).update(data);
     } else {
       data.createdAt = new Date().toISOString();
-      await db.collection('staff').add(data);
+      const ref = await db.collection('staff').add(data);
+      staffDocId = ref.id;
     }
+
+    // Create/update Firebase Auth account and sync with admins collection
+    if (currentAdminRole === 'superadmin' && email && (pass || !docId)) {
+      try {
+        let uid = null;
+
+        if (pass) {
+          // Create new Firebase Auth account
+          const cred = await auth.createUserWithEmailAndPassword(email, pass);
+          uid = cred.user.uid;
+
+          // Sign back in as super admin
+          await auth.signInWithEmailAndPassword('ferdew31@gmail.com','admin123').catch(()=>{});
+        }
+
+        // Sync to admins collection for dashboard login
+        if (uid && adminRole) {
+          await db.collection('admins').doc(uid).set({
+            name, email, role: adminRole,
+            subject, subjects, cls,
+            staffDocId,
+            isTeacher: role.includes('Teacher'),
+            isClassTeacher: role.includes('Class'),
+            isSubjectTeacher: role.includes('Subject'),
+            createdAt: new Date().toISOString(),
+            createdBy: currentAdminName
+          });
+          // Update staff doc with uid
+          await db.collection('staff').doc(staffDocId).update({ adminUid: uid });
+        }
+      } catch(e) {
+        // Email might already exist — still save staff data
+        console.log('Auth error:', e.message);
+        if (e.code !== 'auth/email-already-in-use') {
+          alert('Staff saved but portal login could not be created: ' + e.message);
+        } else {
+          alert('Staff saved! Note: A portal account with this email already exists.');
+        }
+      }
+    } else if (!pass && portalAccess) {
+      // Sync staff data to existing admins doc by email
+      if (firebaseReady) {
+        const adminSnap = await db.collection('admins').where('email','==',email).get();
+        if (!adminSnap.empty) {
+          await db.collection('admins').doc(adminSnap.docs[0].id).update({
+            name, subject, subjects, cls, role: adminRole,
+            isTeacher: role.includes('Teacher'),
+            isClassTeacher: role.includes('Class'),
+            isSubjectTeacher: role.includes('Subject'),
+          });
+        }
+      }
+    }
+
     document.getElementById('sfmSuccess').style.display = 'block';
-    setTimeout(() => { document.getElementById('staffModal')?.remove(); loadStaffList(); }, 1500);
-  } catch(err) { alert('Error: ' + err.message); }
+    setTimeout(() => { document.getElementById('staffModal')?.remove(); loadStaffList(); syncSubAdminPanel(); }, 1500);
+  } catch(err) { alert('Error saving staff: ' + err.message); }
 }
+
 
 async function deleteStaffMember(docId) {
   if (currentAdminRole !== 'superadmin') { alert('Only Super Admin can delete staff accounts.'); return; }
