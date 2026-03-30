@@ -2152,32 +2152,6 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
       </div>
 
       <!-- STAFF MANAGEMENT -->
-      <div class="dash-section" id="dash-staff">
-        <div class="dash-header"><h2>Staff Management</h2></div>
-        <div class="form-wrap" style="margin-bottom:2rem;">
-          <h3 class="form-title">Add Staff Member</h3>
-          <div class="form-grid">
-            <div class="form-group"><label>Full Name</label><input type="text" id="staff_name" placeholder="Staff full name"></div>
-            <div class="form-group"><label>Role</label>
-              <select id="staff_role">
-                <option>Teacher</option><option>Vice Principal</option><option>Housemaster</option><option>Housemistress</option><option>Bursar</option><option>Admin Staff</option>
-              </select>
-            </div>
-            <div class="form-group"><label>Subject(s)</label><input type="text" id="staff_subject" placeholder="e.g. Mathematics, Physics"></div>
-            <div class="form-group"><label>Phone</label><input type="tel" id="staff_phone" placeholder="08XXXXXXXXX"></div>
-          </div>
-          <button class="btn btn-primary btn-sm" style="margin-top:1rem;" onclick="addStaff()">Add Staff Member</button>
-          <div class="form-success" id="staffSuccess">✅ Staff member added successfully!</div>
-        </div>
-        <div class="dash-table-wrap">
-          <h3 style="margin-bottom:1rem;">All Staff</h3>
-          <table class="dash-table">
-            <thead><tr><th>Name</th><th>Role</th><th>Subject(s)</th><th>Phone</th></tr></thead>
-            <tbody id="staffList"><tr><td colspan="4" style="text-align:center;color:var(--gray-400);padding:2rem;">No staff added yet. Click "Add Staff Member" above.</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
       <!-- ATTENDANCE TRACKER -->
       <div class="dash-section" id="dash-attendance">
         <div class="dash-header"><h2>Attendance Tracker</h2><span style="font-size:0.875rem;color:var(--gray-600);" id="attDate"></span></div>
@@ -3883,7 +3857,7 @@ async function loadFeePayments() {
   if (!firebaseReady) return;
   try {
     // Pending
-    const pendSnap = await db.collection('fee_payments').where('status','==','pending').orderBy('timestamp','desc').get();
+    const pendSnap = await db.collection('fee_payments').get(); // filter below
     const pending = pendSnap.docs.map(d=>({id:d.id,...d.data()}));
     const pendTbody = document.getElementById('feePaymentsTable');
     if (!pending.length) {
@@ -3905,7 +3879,7 @@ async function loadFeePayments() {
         </tr>`).join('');
     }
     // Confirmed
-    const confSnap = await db.collection('fee_payments').where('status','==','confirmed').orderBy('timestamp','desc').limit(30).get();
+    const confSnap = await db.collection('fee_payments').get(); // filter below
     const confirmed = confSnap.docs.map(d=>({id:d.id,...d.data()}));
     const confTbody = document.getElementById('feeConfirmedTable');
     if (!confirmed.length) {
@@ -4304,7 +4278,7 @@ function switchTeacher(section) {
 async function loadTeacherOverview() {
   if (!firebaseReady) return;
   try {
-    const aSnap = await db.collection('assignments').where('createdBy','==', currentTeacher.name || 'Demo Teacher').get();
+    const aSnap = await db.collection('assignments').get();
     const allAssign = aSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     const assignIds = allAssign.map(a => a.id);
 
@@ -4665,7 +4639,8 @@ async function deleteTeacherAssignment(assignId) {
   if (!firebaseReady) return;
   try {
     await db.collection('assignments').doc(assignId).delete();
-    const subs = await db.collection('submissions').where('assignmentId','==',assignId).get();
+    const subsAll = await db.collection('submissions').get();
+    const subs = { docs: subsAll.docs.filter(d => d.data().assignmentId === assignId) };
     const batch = db.batch();
     subs.docs.forEach(d => batch.delete(d.ref));
     await batch.commit();
@@ -4851,12 +4826,10 @@ async function loadStudentAssignments() {
 
   try {
     const studentCls = feeState.cls || document.getElementById('profileClass')?.textContent || '';
-    const snap = await db.collection('assignments')
-      .where('visible', '==', true)
-      .get();
+    const snap = await db.collection('assignments').get();
 
     const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(a => !a.cls || a.cls === studentCls || a.cls === 'All Classes')
+      .filter(a => a.visible !== false && (!a.cls || a.cls === studentCls || a.cls === 'All Classes'))
       .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
 
     if (!all.length) {
@@ -4866,9 +4839,10 @@ async function loadStudentAssignments() {
 
     // Get student's submissions
     const studentId = feeState.admNo || document.getElementById('profileAdmNo')?.textContent || '';
-    const subSnap = await db.collection('submissions').where('studentId','==',studentId).get();
+    const subSnap = await db.collection('submissions').get();
+    // Filter client-side to avoid index requirement
     const mySubmissions = {};
-    subSnap.docs.forEach(d => { mySubmissions[d.data().assignmentId] = { id: d.id, ...d.data() }; });
+    subSnap.docs.filter(d => d.data().studentId === studentId).forEach(d => { mySubmissions[d.data().assignmentId] = { id: d.id, ...d.data() }; });
 
     // Check for new grades — show badge
     const newGrades = Object.values(mySubmissions).filter(s => s.graded && !s.seenByStudent).length;
@@ -5019,9 +4993,7 @@ async function submitAssignment() {
   try {
     // Check if already submitted
     const existing = await db.collection('submissions')
-      .where('assignmentId','==',assignId)
-      .where('studentId','==',studentId)
-      .get();
+      .get(); // filter client-side
 
     if (!existing.empty) {
       // Update existing submission
@@ -5280,7 +5252,8 @@ async function deleteAssignment(assignId) {
   try {
     await db.collection('assignments').doc(assignId).delete();
     // Delete all submissions for this assignment
-    const subs = await db.collection('submissions').where('assignmentId','==',assignId).get();
+    const subsAll = await db.collection('submissions').get();
+    const subs = { docs: subsAll.docs.filter(d => d.data().assignmentId === assignId) };
     const batch = db.batch();
     subs.docs.forEach(d => batch.delete(d.ref));
     await batch.commit();
@@ -5295,10 +5268,7 @@ async function checkAssignmentNotifications() {
     const studentId = feeState.admNo || document.getElementById('profileAdmNo')?.textContent || '';
     if (!studentId) return;
     const snap = await db.collection('notifications')
-      .where('for','==','student')
-      .where('studentId','==',studentId)
-      .where('read','==',false)
-      .get();
+      .get(); // filter client-side
     if (!snap.empty) {
       const badge = document.getElementById('assignBadge');
       if (badge) { badge.style.display = 'inline-flex'; badge.textContent = snap.size; }
@@ -5581,34 +5551,45 @@ async function loadStaffList() {
   const tbody = document.getElementById('staffTableBody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray-400);">⏳ Loading staff...</td></tr>';
-  if (!firebaseReady) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">Firebase not connected.</td></tr>'; return; }
+  if (!firebaseReady) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">Firebase not connected. Check Firestore rules.</td></tr>'; return; }
 
   try {
     const snap = await db.collection('staff').get();
     const staffList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    // Update stats
     document.getElementById('totalStaffCount').textContent = staffList.length;
-    document.getElementById('teacherCount').textContent = staffList.filter(s=>s.role==='Teacher').length;
-    document.getElementById('adminStaffCount').textContent = staffList.filter(s=>s.role!=='Teacher').length;
+    document.getElementById('teacherCount').textContent = staffList.filter(s => (s.role||'').includes('Teacher')).length;
+    document.getElementById('adminStaffCount').textContent = staffList.filter(s => !(s.role||'').includes('Teacher')).length;
 
     if (!staffList.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">No staff added yet. Click "Add Staff" to begin.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:2rem;">No staff yet. Click "Add Staff" to begin.</td></tr>';
       return;
     }
 
-    tbody.innerHTML = staffList.map(s => `
-      <tr>
-        <td><strong>${s.name||'—'}</strong></td>
-        <td><span class="status-badge approved">${s.role||'Teacher'}</span></td>
-        <td>${s.subject||'—'}</td>
-        <td>${s.phone||'—'}</td>
-        <td><span style="background:${s.portalAccess?'#d4edda':'#f8d7da'};color:${s.portalAccess?'#155724':'#721c24'};font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:100px;">${s.portalAccess?'✅ Yes':'❌ No'}</span></td>
+    tbody.innerHTML = staffList.map(s => {
+      const roleColor = (s.role||'').includes('Teacher') ? '#0c5460' : '#155724';
+      const roleBg = (s.role||'').includes('Teacher') ? '#d1ecf1' : '#d4edda';
+      const subjectDisplay = s.subjects?.length ? s.subjects.join(', ') : (s.subject || '—');
+      const classDisplay = s.cls ? `<span style="background:var(--gold-pale);color:var(--navy);font-size:0.72rem;padding:2px 8px;border-radius:100px;font-weight:600;">${s.cls}</span>` : '—';
+      return `<tr>
+        <td>
+          <strong>${s.name||'—'}</strong>
+          <div style="font-size:0.72rem;color:var(--gray-400);">${s.email||''}</div>
+        </td>
+        <td><span style="background:${roleBg};color:${roleColor};padding:2px 8px;border-radius:100px;font-size:0.75rem;font-weight:600;white-space:nowrap;">${s.role||'—'}</span></td>
+        <td style="font-size:0.82rem;max-width:150px;">${subjectDisplay}</td>
+        <td>${classDisplay}</td>
+        <td>
+          <span style="background:${s.portalAccess!==false?'#d4edda':'#f8d7da'};color:${s.portalAccess!==false?'#155724':'#721c24'};font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:100px;">
+            ${s.portalAccess!==false?'✅ Yes':'❌ No'}
+          </span>
+        </td>
         <td>
           <button onclick="openEditStaffModal('${s.id}')" style="background:var(--navy);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;margin-right:4px;">✏️ Edit</button>
-          ${currentAdminRole === 'superadmin' ? `<button onclick="deleteStaffMember('${s.id}')" style="background:var(--danger);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">🗑</button>` : ''}
+          ${currentAdminRole==='superadmin'?`<button onclick="deleteStaffMember('${s.id}')" style="background:var(--danger);color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;cursor:pointer;">🗑</button>`:''}
         </td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   } catch(err) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);">Error: ${err.message}</td></tr>`;
   }
