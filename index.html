@@ -2266,10 +2266,27 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <select id="studentClassFilter" onchange="loadStudents()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
               <option value="">All Classes</option>
-              <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
-              <option>SSS 1 Science</option><option>SSS 1 Arts</option><option>SSS 1 Commercial</option>
-              <option>SSS 2 Science</option><option>SSS 2 Arts</option><option>SSS 2 Commercial</option>
-              <option>SSS 3 Science</option><option>SSS 3 Arts</option><option>SSS 3 Commercial</option>
+              <option value="JSS 1">JSS 1</option>
+              <option value="JSS 2">JSS 2</option>
+              <option value="JSS 3">JSS 3</option>
+              <optgroup label="── SSS 1 ──">
+                <option value="SSS 1">SSS 1 (All)</option>
+                <option value="SSS 1 Science">SSS 1 Science</option>
+                <option value="SSS 1 Arts">SSS 1 Arts</option>
+                <option value="SSS 1 Commercial">SSS 1 Commercial</option>
+              </optgroup>
+              <optgroup label="── SSS 2 ──">
+                <option value="SSS 2">SSS 2 (All)</option>
+                <option value="SSS 2 Science">SSS 2 Science</option>
+                <option value="SSS 2 Arts">SSS 2 Arts</option>
+                <option value="SSS 2 Commercial">SSS 2 Commercial</option>
+              </optgroup>
+              <optgroup label="── SSS 3 ──">
+                <option value="SSS 3">SSS 3 (All)</option>
+                <option value="SSS 3 Science">SSS 3 Science</option>
+                <option value="SSS 3 Arts">SSS 3 Arts</option>
+                <option value="SSS 3 Commercial">SSS 3 Commercial</option>
+              </optgroup>
             </select>
             <button class="btn btn-sm btn-navy" onclick="loadStudents()">🔄 Refresh</button>
             <button class="btn btn-sm btn-primary" onclick="openAddStudentModal()">➕ Add Student</button>
@@ -2495,9 +2512,27 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;">
             <select id="t_classFilter" onchange="loadTeacherAssignments()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
               <option value="">All Classes</option>
-              <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
-              <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
-              <option>All Classes</option>
+              <option value="JSS 1">JSS 1</option>
+              <option value="JSS 2">JSS 2</option>
+              <option value="JSS 3">JSS 3</option>
+              <optgroup label="── SSS 1 ──">
+                <option value="SSS 1">SSS 1 (All)</option>
+                <option value="SSS 1 Science">SSS 1 Science</option>
+                <option value="SSS 1 Arts">SSS 1 Arts</option>
+                <option value="SSS 1 Commercial">SSS 1 Commercial</option>
+              </optgroup>
+              <optgroup label="── SSS 2 ──">
+                <option value="SSS 2">SSS 2 (All)</option>
+                <option value="SSS 2 Science">SSS 2 Science</option>
+                <option value="SSS 2 Arts">SSS 2 Arts</option>
+                <option value="SSS 2 Commercial">SSS 2 Commercial</option>
+              </optgroup>
+              <optgroup label="── SSS 3 ──">
+                <option value="SSS 3">SSS 3 (All)</option>
+                <option value="SSS 3 Science">SSS 3 Science</option>
+                <option value="SSS 3 Arts">SSS 3 Arts</option>
+                <option value="SSS 3 Commercial">SSS 3 Commercial</option>
+              </optgroup>
             </select>
             <select id="t_typeFilter" onchange="loadTeacherAssignments()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
               <option value="">All Types</option>
@@ -2539,9 +2574,28 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
           <div class="dash-header">
             <h2>👥 My Class Students</h2>
             <select id="t_myClassFilter" onchange="loadTeacherClassStudents()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
-              <option value="">Select Class</option>
-              <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
-              <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
+              <option value="">All Classes</option>
+              <option value="JSS 1">JSS 1</option>
+              <option value="JSS 2">JSS 2</option>
+              <option value="JSS 3">JSS 3</option>
+              <optgroup label="── SSS 1 ──">
+                <option value="SSS 1">SSS 1 (All)</option>
+                <option value="SSS 1 Science">SSS 1 Science</option>
+                <option value="SSS 1 Arts">SSS 1 Arts</option>
+                <option value="SSS 1 Commercial">SSS 1 Commercial</option>
+              </optgroup>
+              <optgroup label="── SSS 2 ──">
+                <option value="SSS 2">SSS 2 (All)</option>
+                <option value="SSS 2 Science">SSS 2 Science</option>
+                <option value="SSS 2 Arts">SSS 2 Arts</option>
+                <option value="SSS 2 Commercial">SSS 2 Commercial</option>
+              </optgroup>
+              <optgroup label="── SSS 3 ──">
+                <option value="SSS 3">SSS 3 (All)</option>
+                <option value="SSS 3 Science">SSS 3 Science</option>
+                <option value="SSS 3 Arts">SSS 3 Arts</option>
+                <option value="SSS 3 Commercial">SSS 3 Commercial</option>
+              </optgroup>
             </select>
           </div>
           <div id="teacherClassStudents">
@@ -2555,10 +2609,29 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
             <h2>📈 Scores & Records</h2>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <select id="t_scoreClass" onchange="loadScoreRecords()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
-                <option value="">Select Class</option>
-                <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
-                <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
-              </select>
+              <option value="">All Classes</option>
+              <option value="JSS 1">JSS 1</option>
+              <option value="JSS 2">JSS 2</option>
+              <option value="JSS 3">JSS 3</option>
+              <optgroup label="── SSS 1 ──">
+                <option value="SSS 1">SSS 1 (All)</option>
+                <option value="SSS 1 Science">SSS 1 Science</option>
+                <option value="SSS 1 Arts">SSS 1 Arts</option>
+                <option value="SSS 1 Commercial">SSS 1 Commercial</option>
+              </optgroup>
+              <optgroup label="── SSS 2 ──">
+                <option value="SSS 2">SSS 2 (All)</option>
+                <option value="SSS 2 Science">SSS 2 Science</option>
+                <option value="SSS 2 Arts">SSS 2 Arts</option>
+                <option value="SSS 2 Commercial">SSS 2 Commercial</option>
+              </optgroup>
+              <optgroup label="── SSS 3 ──">
+                <option value="SSS 3">SSS 3 (All)</option>
+                <option value="SSS 3 Science">SSS 3 Science</option>
+                <option value="SSS 3 Arts">SSS 3 Arts</option>
+                <option value="SSS 3 Commercial">SSS 3 Commercial</option>
+              </optgroup>
+            </select>
               <select id="t_scoreSubject" onchange="loadScoreRecords()" style="padding:7px 12px;font-size:0.8rem;border:1.5px solid var(--gray-200);border-radius:8px;">
                 <option value="">All Subjects</option>
                 <option>Mathematics</option><option>English Language</option><option>Biology</option>
@@ -4385,9 +4458,28 @@ function openTeacherAssignModal() {
         </div>
         <div class="form-group"><label>Class *</label>
           <select id="ta_class">
-            <option>All Classes</option>
-            <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
-            <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
+            <option value="All Classes">All Classes</option>
+            <option value="JSS 1">JSS 1</option>
+            <option value="JSS 2">JSS 2</option>
+            <option value="JSS 3">JSS 3</option>
+            <optgroup label="── SSS 1 ──">
+              <option value="SSS 1 Science">SSS 1 Science</option>
+              <option value="SSS 1 Arts">SSS 1 Arts</option>
+              <option value="SSS 1 Commercial">SSS 1 Commercial</option>
+              <option value="SSS 1">SSS 1 (All departments)</option>
+            </optgroup>
+            <optgroup label="── SSS 2 ──">
+              <option value="SSS 2 Science">SSS 2 Science</option>
+              <option value="SSS 2 Arts">SSS 2 Arts</option>
+              <option value="SSS 2 Commercial">SSS 2 Commercial</option>
+              <option value="SSS 2">SSS 2 (All departments)</option>
+            </optgroup>
+            <optgroup label="── SSS 3 ──">
+              <option value="SSS 3 Science">SSS 3 Science</option>
+              <option value="SSS 3 Arts">SSS 3 Arts</option>
+              <option value="SSS 3 Commercial">SSS 3 Commercial</option>
+              <option value="SSS 3">SSS 3 (All departments)</option>
+            </optgroup>
           </select>
         </div>
         <div class="form-group"><label>Max Score</label><input type="number" id="ta_maxscore" value="100" min="1" max="100"></div>
@@ -4702,18 +4794,25 @@ async function loadTeacherClassStudents() {
   if (!firebaseReady) { el.innerHTML = '<div style="color:var(--danger);">Firebase not connected.</div>'; return; }
 
   try {
-    // For subject teachers — filter by students offering their subject
-    let snap;
-    if (currentTeacher.isSubjectTeacher && !currentTeacher.isClassTeacher) {
-      // Subject teachers see students in classes where their subject is taught
-      snap = await db.collection('students_db').get();
-    } else {
-      snap = await db.collection('students_db').where('cls','==',cls.split(' ').slice(0,2).join(' ')).get();
-    }
+    // Get all students then filter client-side by class + department
+    const snap = await db.collection('students_db').get();
 
     if (snap.empty) { el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray-400);">No students found.</div>'; return; }
+
+    // Parse selected class — e.g. "SSS 1 Science" → baseCls="SSS 1", dept="Science"
+    const parts = cls.split(' ');
+    const baseCls = parts.slice(0,2).join(' '); // e.g. "SSS 1"
+    const selectedDept = parts.length > 2 ? parts.slice(2).join(' ') : ''; // e.g. "Science"
+
     const students = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(s => !cls || s.cls === cls || s.cls === cls.split(' ').slice(0,2).join(' '))
+      .filter(s => {
+        if (!cls) return true;
+        // Match base class
+        if (s.cls !== baseCls) return false;
+        // If department selected, filter by it
+        if (selectedDept && s.dept && s.dept !== selectedDept) return false;
+        return true;
+      })
       .sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
     el.innerHTML = `
@@ -4861,10 +4960,21 @@ async function loadStudentAssignments() {
 
   try {
     const studentCls = feeState.cls || document.getElementById('profileClass')?.textContent || '';
+    const studentDept = feeState.dept || document.getElementById('profileDept')?.textContent || '';
     const snap = await db.collection('assignments').get();
 
     const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(a => a.visible !== false && (!a.cls || a.cls === studentCls || a.cls === 'All Classes'))
+      .filter(a => {
+        if (a.visible === false) return false;
+        if (!a.cls || a.cls === 'All Classes') return true;
+        // Exact match e.g. "SSS 1 Science"
+        if (a.cls === studentCls) return true;
+        // Assignment for base class e.g. "SSS 1" matches student in "SSS 1 Science"
+        if (studentCls.startsWith(a.cls)) return true;
+        // Assignment for dept class matches student
+        if (a.cls === `${studentCls} ${studentDept}`) return true;
+        return false;
+      })
       .sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
 
     if (!all.length) {
@@ -5396,9 +5506,13 @@ async function loadStudents() {
 
     let students = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     if (classFilter) {
+      const parts = classFilter.split(' ');
+      const baseCls = parts.slice(0,2).join(' ');
+      const dept = parts.length > 2 ? parts.slice(2).join(' ') : '';
       students = students.filter(s => {
-        const fullClass = s.dept ? `${s.cls} ${s.dept}` : s.cls;
-        return fullClass === classFilter || s.cls === classFilter;
+        if (s.cls !== baseCls) return false;
+        if (dept && s.dept && s.dept !== dept) return false;
+        return true;
       });
     }
     students.sort((a,b) => (a.cls||'').localeCompare(b.cls||'') || (a.name||'').localeCompare(b.name||''));
@@ -5694,7 +5808,27 @@ function showStaffModal(docId) {
           <label>Assigned Class *</label>
           <select id="sfm_cls">
             <option value="">-- Select Class --</option>
-            ${CLASSES.map(c=>`<option value="${c}">${c}</option>`).join('')}
+            <option value="JSS 1">JSS 1</option>
+            <option value="JSS 2">JSS 2</option>
+            <option value="JSS 3">JSS 3</option>
+            <optgroup label="── SSS 1 ──">
+              <option value="SSS 1">SSS 1 (All)</option>
+              <option value="SSS 1 Science">SSS 1 Science</option>
+              <option value="SSS 1 Arts">SSS 1 Arts</option>
+              <option value="SSS 1 Commercial">SSS 1 Commercial</option>
+            </optgroup>
+            <optgroup label="── SSS 2 ──">
+              <option value="SSS 2">SSS 2 (All)</option>
+              <option value="SSS 2 Science">SSS 2 Science</option>
+              <option value="SSS 2 Arts">SSS 2 Arts</option>
+              <option value="SSS 2 Commercial">SSS 2 Commercial</option>
+            </optgroup>
+            <optgroup label="── SSS 3 ──">
+              <option value="SSS 3">SSS 3 (All)</option>
+              <option value="SSS 3 Science">SSS 3 Science</option>
+              <option value="SSS 3 Arts">SSS 3 Arts</option>
+              <option value="SSS 3 Commercial">SSS 3 Commercial</option>
+            </optgroup>
           </select>
         </div>
 
@@ -5993,6 +6127,7 @@ function loadPortal(student) {
   // Init fees
   initFees(student.class || student.cls, student.email || '', student.name, student.admNo || student.studentId);
   feeState.cls = student.class || student.cls || '';
+  feeState.dept = student.dept || '';
   // Check for new notices and assignments
   setTimeout(checkNewNotices, 500);
   setTimeout(checkAssignmentNotifications, 800);
