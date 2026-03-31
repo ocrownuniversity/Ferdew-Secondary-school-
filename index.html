@@ -2738,10 +2738,7 @@ footer { background: var(--navy-dark); color: var(--white); padding: 60px 5% 30p
                   <option>Third Term 2025/2026</option>
                 </select>
                 <button class="btn btn-sm btn-navy" onclick="loadScoreRecords()">🔄 Refresh</button>
-              </div>
-            </div>
-            <div style="overflow-x:auto;">
-              <table class="dash-table" id="scoresTable">
+                <button onclick="cleanDuplicateScores()" style="background:#e17055;color:white;border:none;padding:7px 12px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-weight:600;">🧹 Fix Duplicates</button>
                 <thead>
                   <tr><th>Student</th><th>Subject</th><th>Assignment</th><th>Test</th><th>Exam</th><th>Total</th><th>Grade</th><th>Term</th><th>Action</th></tr>
                 </thead>
@@ -5001,6 +4998,74 @@ function autoGrade(subId, maxScore) {
   gradeEl.value = grade;
 }
 
+// ===== CLEAN DUPLICATE SCORES =====
+async function cleanDuplicateScores() {
+  if (!confirm('This will remove duplicate subject records, keeping only the most recent score per student per subject per term. Continue?')) return;
+  if (!firebaseReady) { alert('Firebase not connected.'); return; }
+  try {
+    const snap = await db.collection('grades').get();
+    const all = snap.docs.map(d => ({ docId: d.id, ref: d.ref, ...d.data() }));
+
+    // Group by studentId + subject + term
+    const groups = {};
+    all.forEach(s => {
+      const key = `${s.studentId}__${(s.subject||'').replace(/\s/g,'_')}__${(s.term||'').replace(/\s/g,'_')}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(s);
+    });
+
+    // For each group with duplicates, keep the best one and delete the rest
+    let deleted = 0;
+    const batch = db.batch();
+
+    for (const key in groups) {
+      const group = groups[key];
+      if (group.length <= 1) continue;
+
+      // Sort: prefer records with breakdown data, then most recent
+      group.sort((a,b) => {
+        const aHasBreakdown = a.assignment != null || a.test != null || a.exam != null;
+        const bHasBreakdown = b.assignment != null || b.test != null || b.exam != null;
+        if (aHasBreakdown && !bHasBreakdown) return -1;
+        if (!aHasBreakdown && bHasBreakdown) return 1;
+        return (b.recordedAt||'').localeCompare(a.recordedAt||'');
+      });
+
+      // Keep first (best), delete rest
+      const toDelete = group.slice(1);
+      toDelete.forEach(s => { batch.delete(s.ref); deleted++; });
+
+      // Rename the keeper to consistent doc ID
+      const keeper = group[0];
+      const cleanStudentId = (keeper.studentId||'').replace(/[^a-zA-Z0-9]/g,'_');
+      const cleanSubject = (keeper.subject||'').replace(/[^a-zA-Z0-9]/g,'_');
+      const cleanTerm = (keeper.term||'').replace(/[^a-zA-Z0-9]/g,'_');
+      const newDocId = `${cleanStudentId}__${cleanSubject}__${cleanTerm}`;
+
+      if (keeper.docId !== newDocId) {
+        // Copy to new doc ID, delete old
+        const newRef = db.collection('grades').doc(newDocId);
+        batch.set(newRef, {
+          studentId: keeper.studentId, studentName: keeper.studentName,
+          subject: keeper.subject, term: keeper.term,
+          assignment: keeper.assignment ?? null,
+          test: keeper.test ?? null,
+          exam: keeper.exam ?? null,
+          total: keeper.total ?? keeper.score ?? null,
+          grade: keeper.grade, remark: keeper.remark || '',
+          recordedBy: keeper.recordedBy || 'Teacher',
+          recordedAt: keeper.recordedAt || new Date().toISOString()
+        });
+        batch.delete(keeper.ref);
+      }
+    }
+
+    await batch.commit();
+    alert(`✅ Done! Removed ${deleted} duplicate records. Each student now has one record per subject.`);
+    loadScoreRecords();
+  } catch(err) { alert('Error: ' + err.message); }
+}
+
 // ===== SCORE CALCULATOR =====
 function calcScoreTotal() {
   const a = parseFloat(document.getElementById('sc_assignment')?.value) || 0;
@@ -5063,8 +5128,12 @@ async function recordSubjectScore() {
   if (!subject) { alert('Please select a subject.'); return; }
   if (!firebaseReady) { alert('Firebase not connected.'); return; }
 
-  // Use a unique doc ID: studentId_subject_term so it UPDATES not duplicates
-  const docId = `${studentId}_${subject.replace(/\s/g,'_')}_${term.replace(/\s/g,'_')}`;
+  // Use a CONSISTENT unique doc ID per student+subject+term
+  // This means saving again UPDATES the same record instead of creating duplicates
+  const cleanStudentId = studentId.replace(/[^a-zA-Z0-9]/g, '_');
+  const cleanSubject = subject.replace(/[^a-zA-Z0-9]/g, '_');
+  const cleanTerm = term.replace(/[^a-zA-Z0-9]/g, '_');
+  const docId = `${cleanStudentId}__${cleanSubject}__${cleanTerm}`;
 
   try {
     await db.collection('grades').doc(docId).set({
@@ -5163,67 +5232,151 @@ async function loadStudentResults() {
 
   try {
     const snap = await db.collection('grades').get();
-    const myScores = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(s => s.studentId === studentId && s.term === term)
-      .sort((a,b) => (a.subject||'').localeCompare(b.subject||''));
+    const allScores = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(s => s.studentId === studentId && s.term === term);
+
+    // DEDUPLICATE by subject — keep the most recent record per subject
+    // This handles old duplicate records gracefully
+    const bySubject = {};
+    allScores.forEach(s => {
+      const key = s.subject || 'Unknown';
+      if (!bySubject[key]) {
+        bySubject[key] = s;
+      } else {
+        // Keep most recent
+        const existing = bySubject[key];
+        if ((s.recordedAt||'') > (existing.recordedAt||'')) bySubject[key] = s;
+        // Also prefer records that have breakdown data
+        if ((s.assignment != null || s.test != null || s.exam != null) &&
+            (existing.assignment == null && existing.test == null && existing.exam == null)) {
+          bySubject[key] = s;
+        }
+      }
+    });
+
+    const myScores = Object.values(bySubject).sort((a,b) => (a.subject||'').localeCompare(b.subject||''));
 
     const gc = g => g==="A"?"#155724":g==="B"?"#0c5460":g==="C"?"#856404":g==="D"?"#a05c00":"#721c24";
     const gb = g => g==="A"?"#d4edda":g==="B"?"#d1ecf1":g==="C"?"#fff3cd":g==="D"?"#ffe8cc":"#f8d7da";
 
     if (!myScores.length) {
-      wrap.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray-400);"><div style="font-size:2.5rem;margin-bottom:1rem;">📋</div><div style="font-weight:700;font-size:1rem;margin-bottom:0.5rem;">No results for ${term}</div><div style="font-size:0.82rem;">Results appear here once your teachers record your scores.</div></div>`;
+      wrap.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray-400);">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">📋</div>
+        <div style="font-weight:700;font-size:1rem;margin-bottom:0.5rem;">No results for ${term}</div>
+        <div style="font-size:0.82rem;">Results appear here once your teachers record your scores.</div>
+      </div>`;
       if (summary) summary.innerHTML = '';
       if (assignList) assignList.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:0.82rem;">No graded assignments yet.</div>';
       return;
     }
 
-    wrap.innerHTML = `<table class="results-table" style="min-width:600px;">
-      <thead><tr style="background:var(--navy-dark);">
-        <th style="color:white;text-align:left;padding:12px 14px;">Subject</th>
-        <th style="color:var(--gold-light);text-align:center;padding:12px 8px;">Assignment<br><span style="font-size:0.7rem;font-weight:400;">/30</span></th>
-        <th style="color:var(--gold-light);text-align:center;padding:12px 8px;">Test<br><span style="font-size:0.7rem;font-weight:400;">/20</span></th>
-        <th style="color:var(--gold-light);text-align:center;padding:12px 8px;">Exam<br><span style="font-size:0.7rem;font-weight:400;">/50</span></th>
-        <th style="color:white;text-align:center;padding:12px 8px;">Total<br><span style="font-size:0.7rem;font-weight:400;">/100</span></th>
-        <th style="color:white;text-align:center;padding:12px 8px;">Grade</th>
-        <th style="color:rgba(255,255,255,0.6);text-align:left;padding:12px 14px;">Remark</th>
-      </tr></thead>
-      <tbody>${myScores.map((s,i) => `
-        <tr style="background:${i%2===0?"var(--white)":"var(--off-white)"};">
-          <td style="padding:12px 14px;font-weight:700;color:var(--navy);">${s.subject||"—"}</td>
-          <td style="text-align:center;padding:12px 8px;font-size:1rem;font-weight:700;">${s.assignment!=null?s.assignment:"—"}</td>
-          <td style="text-align:center;padding:12px 8px;font-size:1rem;font-weight:700;">${s.test!=null?s.test:"—"}</td>
-          <td style="text-align:center;padding:12px 8px;font-size:1rem;font-weight:700;">${s.exam!=null?s.exam:"—"}</td>
-          <td style="text-align:center;padding:12px 8px;"><span style="font-size:1.1rem;font-weight:900;color:var(--navy);">${s.total!=null?s.total:"—"}</span></td>
-          <td style="text-align:center;padding:12px 8px;"><span style="background:${gb(s.grade)};color:${gc(s.grade)};font-weight:900;padding:5px 14px;border-radius:100px;font-size:0.9rem;">${s.grade||"—"}</span></td>
-          <td style="padding:12px 14px;font-size:0.82rem;color:var(--gray-600);">${s.remark||"—"}</td>
-        </tr>`).join("")}
-      </tbody></table>`;
+    // Calculate totals — handle both old format (score field) and new format (assignment+test+exam)
+    const processedScores = myScores.map(s => {
+      let assignment = s.assignment != null ? s.assignment : null;
+      let test = s.test != null ? s.test : null;
+      let exam = s.exam != null ? s.exam : null;
+      let total = s.total != null ? s.total : null;
 
-    const withTotal = myScores.filter(s => s.total != null);
-    const avg = withTotal.length ? withTotal.reduce((s,r) => s+r.total,0)/withTotal.length : 0;
-    const og = avg>=70?"A":avg>=60?"B":avg>=50?"C":avg>=40?"D":"F";
+      // Handle old format where score was saved as one field
+      if (total == null && s.score != null) {
+        total = s.score;
+        // Try to guess breakdown from score (fallback)
+        assignment = null; test = null; exam = null;
+      }
+
+      // Recalculate total if we have breakdown
+      if (assignment != null || test != null || exam != null) {
+        total = (assignment||0) + (test||0) + (exam||0);
+      }
+
+      const grade = total != null
+        ? (total >= 70 ? 'A' : total >= 60 ? 'B' : total >= 50 ? 'C' : total >= 40 ? 'D' : 'F')
+        : (s.grade || '—');
+
+      return { ...s, assignment, test, exam, total, grade };
+    });
+
+    const fmt = v => v != null ? `<strong style="font-size:1rem;">${v}</strong>` : '<span style="color:var(--gray-300);">—</span>';
+
+    wrap.innerHTML = `
+      <table class="results-table" style="min-width:580px;border-collapse:collapse;">
+        <thead>
+          <tr style="background:var(--navy-dark);">
+            <th style="color:white;text-align:left;padding:12px 14px;min-width:140px;">Subject</th>
+            <th style="color:var(--gold-light);text-align:center;padding:12px 10px;">
+              Assignment<br><span style="font-size:0.68rem;font-weight:400;opacity:0.8;">(30 marks)</span>
+            </th>
+            <th style="color:var(--gold-light);text-align:center;padding:12px 10px;">
+              Test<br><span style="font-size:0.68rem;font-weight:400;opacity:0.8;">(20 marks)</span>
+            </th>
+            <th style="color:var(--gold-light);text-align:center;padding:12px 10px;">
+              Exam<br><span style="font-size:0.68rem;font-weight:400;opacity:0.8;">(50 marks)</span>
+            </th>
+            <th style="color:white;text-align:center;padding:12px 10px;background:rgba(255,255,255,0.05);">
+              Total<br><span style="font-size:0.68rem;font-weight:400;opacity:0.8;">(100)</span>
+            </th>
+            <th style="color:white;text-align:center;padding:12px 10px;">Grade</th>
+            <th style="color:rgba(255,255,255,0.6);text-align:left;padding:12px 14px;">Remark</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${processedScores.map((s,i) => `
+            <tr style="background:${i%2===0?'var(--white)':'var(--off-white)'};border-bottom:1px solid var(--gray-200);">
+              <td style="padding:12px 14px;font-weight:700;color:var(--navy);font-size:0.9rem;">${s.subject||'—'}</td>
+              <td style="text-align:center;padding:12px 10px;">${fmt(s.assignment)}</td>
+              <td style="text-align:center;padding:12px 10px;">${fmt(s.test)}</td>
+              <td style="text-align:center;padding:12px 10px;">${fmt(s.exam)}</td>
+              <td style="text-align:center;padding:12px 10px;background:rgba(11,31,75,0.04);">
+                <strong style="font-size:1.1rem;color:var(--navy);">${s.total != null ? s.total : '—'}</strong>
+              </td>
+              <td style="text-align:center;padding:12px 10px;">
+                <span style="background:${gb(s.grade)};color:${gc(s.grade)};font-weight:900;padding:5px 14px;border-radius:100px;font-size:0.88rem;">
+                  ${s.grade||'—'}
+                </span>
+              </td>
+              <td style="padding:12px 14px;font-size:0.82rem;color:var(--gray-600);">${s.remark||'—'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top:8px;font-size:0.75rem;color:var(--gray-400);text-align:right;padding-right:8px;">
+        💡 Cells showing — will update when your teacher enters that score
+      </div>`;
+
+    // Summary stats — only include subjects with total
+    const withTotal = processedScores.filter(s => s.total != null);
+    const avg = withTotal.length ? withTotal.reduce((s,r) => s + r.total, 0) / withTotal.length : 0;
+    const og = avg >= 70 ? 'A' : avg >= 60 ? 'B' : avg >= 50 ? 'C' : avg >= 40 ? 'D' : avg > 0 ? 'F' : '—';
+
     if (summary) summary.innerHTML = `
       <div style="background:var(--white);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm);text-align:center;border-top:3px solid var(--navy);">
-        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:var(--navy);">${avg.toFixed(1)}</div>
-        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Average Score</div></div>
-      <div style="background:var(--white);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm);text-align:center;border-top:3px solid ${gb(og)};">
-        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:${gc(og)};">${og}</div>
-        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Overall Grade</div></div>
+        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:var(--navy);">${withTotal.length ? avg.toFixed(1) : '—'}</div>
+        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Average Score</div>
+      </div>
+      <div style="background:var(--white);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm);text-align:center;border-top:3px solid ${og!=='—'?gb(og):'var(--gray-200)'};">
+        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:${og!=='—'?gc(og):'var(--gray-400)'};">${og}</div>
+        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Overall Grade</div>
+      </div>
       <div style="background:var(--white);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow-sm);text-align:center;border-top:3px solid var(--gold);">
-        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:var(--gold);">${myScores.length}</div>
-        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Subjects</div></div>`;
+        <div style="font-family:var(--font-head);font-size:2rem;font-weight:900;color:var(--gold);">${processedScores.length}</div>
+        <div style="font-size:0.78rem;color:var(--gray-600);text-transform:uppercase;margin-top:4px;">Subjects</div>
+      </div>`;
 
+    // Graded assignments
     if (assignList) {
       const subSnap = await db.collection('submissions').get();
       const mySubs = subSnap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>s.studentId===studentId&&s.graded);
       assignList.innerHTML = mySubs.length ? mySubs.map(s=>`
         <div style="background:var(--white);border-radius:var(--radius);padding:0.875rem 1rem;box-shadow:var(--shadow-sm);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-left:3px solid var(--success);">
-          <div><div style="font-weight:600;font-size:0.875rem;">${s.assignmentTitle||"Assignment"}</div>
-          <div style="font-size:0.75rem;color:var(--gray-400);">${s.gradedBy||"Teacher"} · ${s.gradedAt?new Date(s.gradedAt).toLocaleDateString("en-NG"):""}</div>
-          ${s.feedback?`<div style="font-size:0.78rem;color:var(--gray-600);margin-top:3px;">💬 ${s.feedback}</div>`:""}</div>
+          <div>
+            <div style="font-weight:600;font-size:0.875rem;">${s.assignmentTitle||'Assignment'}</div>
+            <div style="font-size:0.75rem;color:var(--gray-400);">${s.gradedBy||'Teacher'} · ${s.gradedAt?new Date(s.gradedAt).toLocaleDateString('en-NG'):''}</div>
+            ${s.feedback?`<div style="font-size:0.78rem;color:var(--gray-600);margin-top:3px;">💬 ${s.feedback}</div>`:''}
+          </div>
           <span style="background:${gb(s.grade)};color:${gc(s.grade)};font-weight:700;padding:4px 12px;border-radius:100px;font-size:0.85rem;">${s.score}/${s.maxScore||100} — ${s.grade}</span>
-        </div>`).join("") : '<div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:0.82rem;">No graded assignments yet.</div>';
+        </div>`).join('') :
+        '<div style="text-align:center;padding:1rem;color:var(--gray-400);font-size:0.82rem;">No graded assignments yet.</div>';
     }
+
   } catch(err) {
     wrap.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--danger);">Error: ${err.message}</div>`;
   }
